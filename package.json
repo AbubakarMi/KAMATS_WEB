@@ -9,22 +9,54 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "@hookform/resolvers": "^5.2.2",
+    "@microsoft/signalr": "^10.0.0",
     "@react-router/node": "7.12.0",
     "@react-router/serve": "7.12.0",
+    "@reduxjs/toolkit": "^2.11.2",
+    "antd": "^6.3.2",
+    "axios": "^1.13.6",
+    "dayjs": "^1.11.20",
+    "file-saver": "^2.0.5",
     "isbot": "^5.1.31",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
+    "qrcode": "^1.5.4",
+    "qs": "^6.15.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router": "7.12.0"
+    "react-hook-form": "^7.71.2",
+    "react-is": "^19.2.4",
+    "react-redux": "^9.2.0",
+    "react-router": "7.12.0",
+    "recharts": "^3.8.0",
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@react-router/dev": "7.12.0",
     "@tailwindcss/vite": "^4.1.13",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^22",
+    "@types/qrcode": "^1.5.6",
+    "@types/qs": "^6.15.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/uuid": "^10.0.0",
+    "msw": "^2.12.10",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.1.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }
