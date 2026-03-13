@@ -1,4 +1,4 @@
-import { Table, Space, Button, Input, Row, Col } from 'antd';
+import { Table, Space, Button, Input } from 'antd';
 import { DownloadOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { TableProps, TablePaginationConfig } from 'antd';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
@@ -63,56 +63,73 @@ export function DataTable<T extends object>({
       }
     : false;
 
+  const hasToolbar = showSearch || showExport || tableTitle;
+
   return (
     <div>
-      {(showSearch || showExport || tableTitle) && (
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }} gutter={[8, 8]}>
-          <Col xs={24} md={12}>
+      {hasToolbar && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12,
+            marginBottom: 16,
+            padding: '12px 16px',
+            background: '#F8FAFC',
+            borderRadius: 10,
+            border: '1px solid #F1F5F9',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 200 }}>
             {showSearch && onSearch && (
               <Input
                 placeholder={searchPlaceholder}
-                prefix={<SearchOutlined />}
+                prefix={<SearchOutlined style={{ color: '#94A3B8' }} />}
                 allowClear
                 onChange={(e) => onSearch(e.target.value)}
-                style={{ maxWidth: 300, width: '100%' }}
+                style={{ maxWidth: 280, width: '100%' }}
               />
             )}
-          </Col>
-          <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-            <Space wrap>
-              {onRefresh && (
-                <Button icon={<ReloadOutlined />} onClick={onRefresh}>
-                  Refresh
+          </div>
+          <Space wrap size={6}>
+            {onRefresh && (
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={onRefresh}
+                size="small"
+              >
+                Refresh
+              </Button>
+            )}
+            {showExport && onExport && (
+              <>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={() => onExport('csv')}
+                  size="small"
+                >
+                  CSV
                 </Button>
-              )}
-              {showExport && onExport && (
-                <>
-                  <Button
-                    icon={<DownloadOutlined />}
-                    onClick={() => onExport('csv')}
-                    size="small"
-                  >
-                    CSV
-                  </Button>
-                  <Button
-                    icon={<DownloadOutlined />}
-                    onClick={() => onExport('excel')}
-                    size="small"
-                  >
-                    Excel
-                  </Button>
-                  <Button
-                    icon={<DownloadOutlined />}
-                    onClick={() => onExport('pdf')}
-                    size="small"
-                  >
-                    PDF
-                  </Button>
-                </>
-              )}
-            </Space>
-          </Col>
-        </Row>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={() => onExport('excel')}
+                  size="small"
+                >
+                  Excel
+                </Button>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={() => onExport('pdf')}
+                  size="small"
+                >
+                  PDF
+                </Button>
+              </>
+            )}
+          </Space>
+        </div>
       )}
 
       <Table<T>
