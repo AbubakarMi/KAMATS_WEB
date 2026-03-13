@@ -8,6 +8,8 @@ import type { DataNode } from 'antd/es/tree';
 import {
   useGetStoresQuery, useCreateStoreMutation, useUpdateStoreMutation,
 } from '~/features/admin/adminApi';
+import { sanitizeFormValues, zodValidator, setApiFieldErrors } from '~/shared/utils';
+import { createStoreSchema } from '~/shared/schemas';
 import type { Store, CreateStoreRequest } from '~/api/types/admin';
 import { StoreTier } from '~/api/types/enums';
 
@@ -30,7 +32,6 @@ export default function StoresPage() {
   // Build tree from flat list
   const treeData = useMemo(() => {
     if (!stores) return [];
-    const storeMap = new Map(stores.map((s) => [s.id, s]));
     const roots: DataNode[] = [];
 
     const toNode = (store: Store): DataNode => ({
@@ -69,23 +70,24 @@ export default function StoresPage() {
   const handleCreate = async () => {
     try {
       const values = await form.validateFields();
-      await createStore(values as CreateStoreRequest).unwrap();
+      const sanitized = sanitizeFormValues(values);
+      await createStore(sanitized as CreateStoreRequest).unwrap();
       message.success('Store created');
       setModalOpen(false);
     } catch (err) {
-      const apiErr = err as { data?: { message?: string } };
-      message.error(apiErr?.data?.message || 'Failed to create store');
+      const fallback = setApiFieldErrors(form, err);
+      if (fallback) message.error(fallback);
     }
   };
 
   return (
     <div>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Title level={3} style={{ margin: 0 }}>Store Hierarchy</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
           Add Store
         </Button>
-      </Space>
+      </div>
 
       <div style={{ display: 'flex', gap: 24 }}>
         <Card style={{ flex: 1, minWidth: 400 }} loading={isLoading}>
@@ -137,13 +139,13 @@ export default function StoresPage() {
         confirmLoading={creating || updating}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="code" label="Store Code" rules={[{ required: true }]}>
+          <Form.Item name="code" label="Store Code" rules={[zodValidator(createStoreSchema, 'code')]}>
             <Input placeholder="e.g. CS-MAIN, US-CWTP" />
           </Form.Item>
-          <Form.Item name="name" label="Store Name" rules={[{ required: true }]}>
+          <Form.Item name="name" label="Store Name" rules={[zodValidator(createStoreSchema, 'name')]}>
             <Input />
           </Form.Item>
-          <Form.Item name="tier" label="Tier" rules={[{ required: true }]}>
+          <Form.Item name="tier" label="Tier" rules={[zodValidator(createStoreSchema, 'tier')]}>
             <Select
               options={Object.values(StoreTier).map((t) => ({ value: t, label: t }))}
             />

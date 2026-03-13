@@ -3,6 +3,7 @@ import { Typography, Table, Button, Modal, Input, message } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { useGetConfigurationQuery, useUpdateConfigMutation } from '~/features/admin/adminApi';
 import { formatDateTime } from '~/shared/utils/formatters';
+import { sanitizeString } from '~/shared/utils';
 import type { ConfigItem } from '~/api/types/admin';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -23,7 +24,8 @@ export default function ConfigurationPage() {
   const handleSave = async () => {
     if (!editItem) return;
     try {
-      const parsed = JSON.parse(editValue);
+      const sanitized = sanitizeString(editValue);
+      const parsed = JSON.parse(sanitized);
       await updateConfig({
         key: editItem.configKey,
         data: { configValue: parsed },

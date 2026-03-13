@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '~/shared/hooks';
 import AppLayout from '~/shared/components/layout/AppLayout';
+import { ErrorBoundary } from '~/shared/components/errors';
 
 export default function AuthenticatedLayout() {
   const { isAuthenticated } = useAuth();
@@ -11,7 +12,9 @@ export default function AuthenticatedLayout() {
 
   return (
     <AppLayout>
-      <Outlet />
+      <ErrorBoundary level="page">
+        <Outlet />
+      </ErrorBoundary>
     </AppLayout>
   );
 }

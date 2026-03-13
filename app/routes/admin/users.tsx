@@ -7,6 +7,7 @@ import {
   PlusOutlined, LockOutlined, StopOutlined, UnlockOutlined,
 } from '@ant-design/icons';
 import { DataTable } from '~/shared/components/tables';
+import { QueryErrorAlert } from '~/shared/components/errors';
 import { usePagination } from '~/shared/hooks';
 import {
   useGetUsersQuery,
@@ -17,6 +18,8 @@ import {
   useGetStoresQuery,
 } from '~/features/admin/adminApi';
 import { formatDateTime } from '~/shared/utils/formatters';
+import { sanitizeFormValues, zodValidator, setApiFieldErrors } from '~/shared/utils';
+import { createUserSchema, updateUserSchema } from '~/shared/schemas';
 import type { User, CreateUserRequest, UpdateUserRequest } from '~/api/types/admin';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -29,7 +32,7 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [form] = Form.useForm();
 
-  const { data, isLoading, refetch } = useGetUsersQuery({
+  const { data, isLoading, isError, error: queryError, refetch } = useGetUsersQuery({
     ...params,
     search: search || undefined,
   });
@@ -64,18 +67,19 @@ export default function UsersPage() {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      const sanitized = sanitizeFormValues(values);
       if (editingUser) {
-        await updateUser({ id: editingUser.id, data: values as UpdateUserRequest }).unwrap();
+        await updateUser({ id: editingUser.id, data: sanitized as UpdateUserRequest }).unwrap();
         message.success('User updated');
       } else {
-        await createUser(values as CreateUserRequest).unwrap();
+        await createUser(sanitized as CreateUserRequest).unwrap();
         message.success('User created');
       }
       setModalOpen(false);
       form.resetFields();
     } catch (err) {
-      const apiErr = err as { data?: { message?: string } };
-      message.error(apiErr?.data?.message || 'Operation failed');
+      const fallback = setApiFieldErrors(form, err);
+      if (fallback) message.error(fallback);
     }
   };
 
@@ -174,15 +178,18 @@ export default function UsersPage() {
     },
   ];
 
+  const schema = editingUser ? updateUserSchema : createUserSchema;
+
   return (
     <div>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Title level={3} style={{ margin: 0 }}>User Management</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
           Create User
         </Button>
-      </Space>
+      </div>
 
+      {isError && <QueryErrorAlert error={queryError} onRetry={refetch} />}
       <DataTable<User>
         columns={columns}
         dataSource={users}
@@ -208,24 +215,24 @@ export default function UsersPage() {
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           {!editingUser && (
             <>
-              <Form.Item name="username" label="Username" rules={[{ required: true }]}>
+              <Form.Item name="username" label="Username" rules={[zodValidator(schema, 'username')]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="password" label="Password" rules={[{ required: true, min: 8 }]}>
+              <Form.Item name="password" label="Password" rules={[zodValidator(schema, 'password')]}>
                 <Input.Password prefix={<LockOutlined />} />
               </Form.Item>
             </>
           )}
-          <Form.Item name="firstName" label="First Name" rules={[{ required: !editingUser }]}>
+          <Form.Item name="firstName" label="First Name" rules={[zodValidator(schema, 'firstName')]}>
             <Input />
           </Form.Item>
-          <Form.Item name="lastName" label="Last Name" rules={[{ required: !editingUser }]}>
+          <Form.Item name="lastName" label="Last Name" rules={[zodValidator(schema, 'lastName')]}>
             <Input />
           </Form.Item>
-          <Form.Item name="email" label="Email" rules={[{ required: !editingUser, type: 'email' }]}>
+          <Form.Item name="email" label="Email" rules={[zodValidator(schema, 'email')]}>
             <Input />
           </Form.Item>
-          <Form.Item name="phoneNumber" label="Phone Number">
+          <Form.Item name="phoneNumber" label="Phone Number" rules={[zodValidator(schema, 'phoneNumber')]}>
             <Input />
           </Form.Item>
           <Form.Item name="storeId" label="Primary Store">
@@ -236,7 +243,7 @@ export default function UsersPage() {
             />
           </Form.Item>
           {!editingUser && (
-            <Form.Item name="roleIds" label="Roles" rules={[{ required: true }]}>
+            <Form.Item name="roleIds" label="Roles" rules={[zodValidator(schema, 'roleIds')]}>
               <Select mode="multiple" placeholder="Select roles" />
             </Form.Item>
           )}

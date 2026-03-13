@@ -11,6 +11,8 @@ interface DataTableProps<T> extends Omit<TableProps<T>, 'onChange' | 'pagination
   onSearch?: (search: string) => void;
   onRefresh?: () => void;
   onExport?: (format: 'csv' | 'excel' | 'pdf') => void;
+  onCreate?: () => void;
+  createLabel?: string;
   searchPlaceholder?: string;
   showSearch?: boolean;
   showExport?: boolean;
@@ -24,6 +26,8 @@ export function DataTable<T extends object>({
   onSearch,
   onRefresh,
   onExport,
+  onCreate,
+  createLabel,
   searchPlaceholder = 'Search...',
   showSearch = true,
   showExport = true,
@@ -62,20 +66,20 @@ export function DataTable<T extends object>({
   return (
     <div>
       {(showSearch || showExport || tableTitle) && (
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-          <Col>
+        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }} gutter={[8, 8]}>
+          <Col xs={24} md={12}>
             {showSearch && onSearch && (
               <Input
                 placeholder={searchPlaceholder}
                 prefix={<SearchOutlined />}
                 allowClear
                 onChange={(e) => onSearch(e.target.value)}
-                style={{ width: 300 }}
+                style={{ maxWidth: 300, width: '100%' }}
               />
             )}
           </Col>
-          <Col>
-            <Space>
+          <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+            <Space wrap>
               {onRefresh && (
                 <Button icon={<ReloadOutlined />} onClick={onRefresh}>
                   Refresh

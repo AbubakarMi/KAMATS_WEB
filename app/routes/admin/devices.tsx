@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Typography, Button, Space, Modal, Form, Input, Select,
+  Typography, Button, Modal, Form, Input, Select,
   Tag, Popconfirm, message,
 } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -10,6 +10,8 @@ import {
   useGetStoresQuery,
 } from '~/features/admin/adminApi';
 import { formatDateTime } from '~/shared/utils/formatters';
+import { sanitizeFormValues, zodValidator, setApiFieldErrors } from '~/shared/utils';
+import { registerDeviceSchema } from '~/shared/schemas';
 import type { Device, RegisterDeviceRequest } from '~/api/types/admin';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -26,13 +28,14 @@ export default function DevicesPage() {
   const handleRegister = async () => {
     try {
       const values = await form.validateFields();
-      await registerDevice(values as RegisterDeviceRequest).unwrap();
+      const sanitized = sanitizeFormValues(values);
+      await registerDevice(sanitized as RegisterDeviceRequest).unwrap();
       message.success('Device registered');
       setModalOpen(false);
       form.resetFields();
     } catch (err) {
-      const apiErr = err as { data?: { message?: string } };
-      message.error(apiErr?.data?.message || 'Failed to register device');
+      const fallback = setApiFieldErrors(form, err);
+      if (fallback) message.error(fallback);
     }
   };
 
@@ -78,12 +81,12 @@ export default function DevicesPage() {
 
   return (
     <div>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Title level={3} style={{ margin: 0 }}>Device Management</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
           Register Device
         </Button>
-      </Space>
+      </div>
 
       <DataTable<Device>
         columns={columns}
@@ -103,20 +106,20 @@ export default function DevicesPage() {
         confirmLoading={registering}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="deviceName" label="Device Name" rules={[{ required: true }]}>
+          <Form.Item name="deviceName" label="Device Name" rules={[zodValidator(registerDeviceSchema, 'deviceName')]}>
             <Input />
           </Form.Item>
-          <Form.Item name="deviceType" label="Device Type" rules={[{ required: true }]}>
+          <Form.Item name="deviceType" label="Device Type" rules={[zodValidator(registerDeviceSchema, 'deviceType')]}>
             <Select options={[
               { value: 'mobile', label: 'Mobile' },
               { value: 'tablet', label: 'Tablet' },
               { value: 'scanner', label: 'Scanner' },
             ]} />
           </Form.Item>
-          <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
+          <Form.Item name="serialNumber" label="Serial Number" rules={[zodValidator(registerDeviceSchema, 'serialNumber')]}>
             <Input />
           </Form.Item>
-          <Form.Item name="assignedStoreId" label="Assigned Store">
+          <Form.Item name="assignedStoreId" label="Assigned Store" rules={[zodValidator(registerDeviceSchema, 'assignedStoreId')]}>
             <Select
               placeholder="Select store"
               allowClear

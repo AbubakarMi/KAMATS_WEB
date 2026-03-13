@@ -1,4 +1,4 @@
-import { Card, Statistic, Typography } from 'antd';
+import { Card, Skeleton, Statistic, Typography } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -39,18 +39,23 @@ export function KpiCard({
     <Card
       hoverable={!!onClick}
       onClick={onClick}
-      loading={loading}
       style={{ height: '100%' }}
     >
-      <Statistic
-        title={title}
-        value={value}
-        suffix={suffix}
-      />
-      {trend && trendValue && (
-        <Text style={{ color: trendColor || defaultTrendColor, fontSize: 13 }}>
-          {trendIcon} {trendValue}
-        </Text>
+      {loading ? (
+        <Skeleton active paragraph={{ rows: 1 }} title={{ width: '60%' }} />
+      ) : (
+        <>
+          <Statistic
+            title={title}
+            value={value}
+            suffix={suffix}
+          />
+          {trend && trendValue && (
+            <Text style={{ color: trendColor || defaultTrendColor, fontSize: 13 }}>
+              {trendIcon} {trendValue}
+            </Text>
+          )}
+        </>
       )}
     </Card>
   );

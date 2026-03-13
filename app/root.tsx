@@ -78,11 +78,14 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             status={status === 404 ? '404' : '500'}
             title={status}
             subTitle={message}
-            extra={
-              <Button type="primary" href="/">
+            extra={[
+              <Button key="reload" type="primary" onClick={() => window.location.reload()}>
+                Reload Page
+              </Button>,
+              <Button key="dashboard" href="/">
                 Back to Dashboard
-              </Button>
-            }
+              </Button>,
+            ]}
           />
         </div>
       </ConfigProvider>

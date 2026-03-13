@@ -16,3 +16,14 @@ body {
 .ant-table-wrapper .ant-table-thead > tr > th {
   font-weight: 600;
 }
+
+/* Mobile: prevent Descriptions tables from overflowing */
+@media (max-width: 767px) {
+  .ant-descriptions-view {
+    overflow-x: auto;
+  }
+  .ant-descriptions-item-label,
+  .ant-descriptions-item-content {
+    word-break: break-word;
+  }
+}

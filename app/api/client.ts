@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { notification } from 'antd';
 import { camelToSnakeDeep, snakeToCamelDeep } from '~/shared/utils/caseTransform';
 import type { ApiError } from './types/common';
 
@@ -40,6 +41,12 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  // Attach store context
+  const activeStore = localStorage.getItem('kamats_active_store');
+  if (activeStore) {
+    config.headers['X-Store-Id'] = activeStore;
   }
 
   // Attach idempotency key
@@ -149,6 +156,23 @@ apiClient.interceptors.response.use(
       const retryAfter = Number(error.response.headers['retry-after']) || 5;
       await new Promise((r) => setTimeout(r, retryAfter * 1000));
       return apiClient(originalRequest);
+    }
+
+    // 403 — Forbidden (permission denied)
+    if (error.response?.status === 403) {
+      if (error.response.data) {
+        error.response.data = snakeToCamelDeep(error.response.data) as ApiError;
+      }
+      const method = originalRequest.method?.toUpperCase();
+      if (method && method !== 'GET') {
+        notification.error({
+          message: 'Permission Denied',
+          description:
+            (error.response.data as ApiError)?.message ??
+            'You do not have permission to perform this action.',
+        });
+      }
+      return Promise.reject(error);
     }
 
     // Transform error response to camelCase

@@ -4,6 +4,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   SwapOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import { useDispatch } from 'react-redux';
@@ -13,7 +14,12 @@ import { useLogoutMutation } from '~/features/auth/authApi';
 
 const { Text } = Typography;
 
-export default function AppHeader() {
+interface HeaderProps {
+  isMobile?: boolean;
+  onMenuClick?: () => void;
+}
+
+export default function AppHeader({ isMobile, onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, storeAssignments, activeStoreId } = useAuth();
@@ -53,7 +59,7 @@ export default function AppHeader() {
     <Layout.Header
       style={{
         background: '#fff',
-        padding: '0 24px',
+        padding: isMobile ? '0 12px' : '0 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -61,15 +67,23 @@ export default function AppHeader() {
         height: 56,
       }}
     >
-      <div />
+      <div>
+        {isMobile && (
+          <Button
+            type="text"
+            icon={<MenuOutlined style={{ fontSize: 18 }} />}
+            onClick={onMenuClick}
+          />
+        )}
+      </div>
 
-      <Space size="middle">
+      <Space size={isMobile ? 'small' : 'middle'}>
         {/* Store selector (for multi-store users) */}
         {storeAssignments.length > 1 && (
           <Select
             value={activeStoreId ?? undefined}
             onChange={(value) => dispatch(setActiveStore(value))}
-            style={{ width: 200 }}
+            style={{ width: isMobile ? 140 : 200 }}
             size="small"
             suffixIcon={<SwapOutlined />}
             options={storeAssignments.map((s) => ({
@@ -79,7 +93,7 @@ export default function AppHeader() {
           />
         )}
 
-        {/* Alert bell (placeholder until Phase 4) */}
+        {/* Alert bell */}
         <Badge count={0} size="small">
           <Button
             type="text"
@@ -92,7 +106,7 @@ export default function AppHeader() {
         <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
           <Space style={{ cursor: 'pointer' }}>
             <Avatar size="small" icon={<UserOutlined />} />
-            <Text>{user?.firstName}</Text>
+            {!isMobile && <Text>{user?.firstName}</Text>}
           </Space>
         </Dropdown>
       </Space>

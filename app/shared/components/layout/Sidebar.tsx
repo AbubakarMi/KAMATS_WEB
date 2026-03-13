@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Drawer } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   DashboardOutlined,
@@ -32,9 +32,12 @@ type MenuItem = Required<MenuProps>['items'][number];
 interface SidebarProps {
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
+  isMobile?: boolean;
+  drawerOpen?: boolean;
+  onDrawerClose?: () => void;
 }
 
-export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
+export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, onDrawerClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { hasPermission } = useAuth();
@@ -205,6 +208,59 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     return [];
   }, [menuItems, selectedKeys]);
 
+  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+    navigate(key);
+    onDrawerClose?.();
+  };
+
+  const brand = (
+    <div
+      style={{
+        height: 56,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff',
+        fontWeight: 700,
+        fontSize: isMobile ? 20 : (collapsed ? 16 : 20),
+        letterSpacing: 2,
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+      }}
+    >
+      {isMobile || !collapsed ? 'KAMATS' : 'K'}
+    </div>
+  );
+
+  const menuContent = (
+    <>
+      {brand}
+      <Menu
+        theme="dark"
+        mode="inline"
+        selectedKeys={selectedKeys}
+        defaultOpenKeys={openKeys}
+        items={menuItems}
+        onClick={handleMenuClick}
+        style={{ paddingBottom: 48 }}
+      />
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        placement="left"
+        open={drawerOpen}
+        onClose={onDrawerClose}
+        width={240}
+        styles={{ body: { padding: 0, background: '#001529' } }}
+        closable={false}
+      >
+        {menuContent}
+      </Drawer>
+    );
+  }
+
   return (
     <Sider
       collapsible
@@ -213,29 +269,7 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
       width={240}
       style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0 }}
     >
-      <div
-        style={{
-          height: 56,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontWeight: 700,
-          fontSize: collapsed ? 16 : 20,
-          letterSpacing: 2,
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-        }}
-      >
-        {collapsed ? 'K' : 'KAMATS'}
-      </div>
-      <Menu
-        theme="dark"
-        mode="inline"
-        selectedKeys={selectedKeys}
-        defaultOpenKeys={openKeys}
-        items={menuItems}
-        onClick={({ key }) => navigate(key)}
-      />
+      {menuContent}
     </Sider>
   );
 }

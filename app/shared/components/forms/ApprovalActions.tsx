@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Space, Button, Modal, Input, Typography } from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { sanitizeString } from '~/shared/utils';
 
 const { TextArea } = Input;
 
@@ -45,7 +46,7 @@ export function ApprovalActions({
   const confirmApprove = async () => {
     setSubmitting(true);
     try {
-      await onApprove(notes || undefined);
+      await onApprove(notes ? sanitizeString(notes) : undefined);
       setApproveModalOpen(false);
       setNotes('');
     } finally {
@@ -57,7 +58,7 @@ export function ApprovalActions({
     if (!reason.trim()) return;
     setSubmitting(true);
     try {
-      await onReject(reason.trim());
+      await onReject(sanitizeString(reason.trim()));
       setRejectModalOpen(false);
       setReason('');
     } finally {

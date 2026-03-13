@@ -6,6 +6,8 @@ import { useDispatch } from 'react-redux';
 import { useLoginMutation } from './authApi';
 import { setCredentials } from '~/store';
 import { useAuth } from '~/shared/hooks';
+import { sanitizeFormValues, zodValidator } from '~/shared/utils';
+import { loginSchema } from '~/shared/schemas';
 import type { LoginRequest } from '~/api/types/auth';
 
 const { Title, Text } = Typography;
@@ -24,7 +26,8 @@ export default function LoginPage() {
 
   const onFinish = async (values: LoginRequest) => {
     try {
-      const result = await login(values).unwrap();
+      const sanitized = sanitizeFormValues(values);
+      const result = await login(sanitized).unwrap();
       dispatch(setCredentials(result));
       navigate('/', { replace: true });
     } catch {
@@ -49,7 +52,7 @@ export default function LoginPage() {
       }}
     >
       <Card
-        style={{ width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}
+        style={{ maxWidth: 400, width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}
         styles={{ body: { padding: 32 } }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -75,7 +78,7 @@ export default function LoginPage() {
           >
             <Form.Item
               name="username"
-              rules={[{ required: true, message: 'Enter your username' }]}
+              rules={[zodValidator(loginSchema, 'username')]}
             >
               <Input
                 prefix={<UserOutlined />}
@@ -86,10 +89,7 @@ export default function LoginPage() {
 
             <Form.Item
               name="password"
-              rules={[
-                { required: true, message: 'Enter your password' },
-                { min: 8, message: 'Password must be at least 8 characters' },
-              ]}
+              rules={[zodValidator(loginSchema, 'password')]}
             >
               <Input.Password
                 prefix={<LockOutlined />}
