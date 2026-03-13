@@ -181,7 +181,6 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
   // Determine active key from current path
   const selectedKeys = useMemo(() => {
     const path = location.pathname;
-    // Match the deepest route key that the path starts with
     const allKeys = menuItems.flatMap((item) => {
       if (item && 'children' in item && item.children) {
         return item.children.map((child) => (child as { key: string })?.key).filter(Boolean);
@@ -213,21 +212,76 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
     onDrawerClose?.();
   };
 
+  const showFull = isMobile || !collapsed;
+
   const brand = (
     <div
       style={{
-        height: 56,
+        height: 60,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
-        fontWeight: 700,
-        fontSize: isMobile ? 20 : (collapsed ? 16 : 20),
-        letterSpacing: 2,
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        justifyContent: showFull ? 'flex-start' : 'center',
+        padding: showFull ? '0 20px' : '0',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        gap: 12,
+        flexShrink: 0,
       }}
     >
-      {isMobile || !collapsed ? 'KAMATS' : 'K'}
+      {/* Logo mark */}
+      <div
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+        }}
+      >
+        <span
+          style={{
+            color: '#fff',
+            fontWeight: 800,
+            fontSize: 15,
+            fontFamily: '"Outfit", sans-serif',
+            lineHeight: 1,
+          }}
+        >
+          K
+        </span>
+      </div>
+      {showFull && (
+        <div style={{ overflow: 'hidden' }}>
+          <div
+            style={{
+              color: '#F1F5F9',
+              fontWeight: 700,
+              fontSize: 17,
+              fontFamily: '"Outfit", sans-serif',
+              letterSpacing: '0.01em',
+              lineHeight: 1.2,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            KAMATS
+          </div>
+          <div
+            style={{
+              color: 'rgba(148, 163, 184, 0.6)',
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Water Board
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -241,7 +295,7 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
         defaultOpenKeys={openKeys}
         items={menuItems}
         onClick={handleMenuClick}
-        style={{ paddingBottom: 48 }}
+        style={{ paddingTop: 8, paddingBottom: 48 }}
       />
     </>
   );
@@ -252,8 +306,13 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
         placement="left"
         open={drawerOpen}
         onClose={onDrawerClose}
-        width={240}
-        styles={{ body: { padding: 0, background: '#001529' } }}
+        width={260}
+        styles={{
+          body: {
+            padding: 0,
+            background: 'linear-gradient(180deg, #0B1120 0%, #111827 50%, #0F172A 100%)',
+          },
+        }}
         closable={false}
       >
         {menuContent}
@@ -266,8 +325,15 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
       collapsible
       collapsed={collapsed}
       onCollapse={onCollapse}
-      width={240}
-      style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0 }}
+      width={250}
+      style={{
+        overflow: 'auto',
+        height: '100vh',
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        bottom: 0,
+      }}
     >
       {menuContent}
     </Sider>

@@ -13,7 +13,23 @@ function formatLabel(status: string): string {
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
   return (
-    <Tag color={getStatusColor(status)}>
+    <Tag
+      color={getStatusColor(status)}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          background: 'currentColor',
+          flexShrink: 0,
+        }}
+      />
       {label || formatLabel(status)}
     </Tag>
   );

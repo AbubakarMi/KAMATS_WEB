@@ -12,19 +12,21 @@ import { useGetStockSummaryQuery, useGetLossSummaryReportQuery, useGetTransferRe
 import { useGetAlertsQuery } from '~/features/alerts/alertsApi';
 import { formatNumber, formatWeight, formatDateTime } from '~/shared/utils/formatters';
 import { alertSeverityColors } from '~/shared/utils/statusColors';
+import { useAuth } from '~/shared/hooks';
 import type { ColumnsType } from 'antd/es/table';
 import type { StoreStockSummary } from '~/api/types/reports';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const severityHex: Record<string, string> = {
-  Info: '#1677ff',
-  Warning: '#faad14',
-  Significant: '#ff4d4f',
-  Critical: '#eb2f96',
+  Info: '#2563EB',
+  Warning: '#D97706',
+  Significant: '#DC2626',
+  Critical: '#BE185D',
 };
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { data: stock, isLoading: stockLoading, isError: stockError, error: stockErr, refetch: refetchStock } = useGetStockSummaryQuery();
   const { data: loss, isLoading: lossLoading, isError: lossError, error: lossErr, refetch: refetchLoss } = useGetLossSummaryReportQuery();
   const { data: alertsData, isLoading: alertsLoading, isError: alertsError, error: alertsErr, refetch: refetchAlerts } = useGetAlertsQuery({ page: 1, pageSize: 5, status: 'Open' });
@@ -46,13 +48,45 @@ export default function Dashboard() {
       title: 'Status',
       dataIndex: 'belowReorderPoint',
       width: 130,
-      render: (v: boolean) => v ? <Tag color="red">Below Reorder</Tag> : <Tag color="green">OK</Tag>,
+      render: (v: boolean) => v
+        ? <Tag color="red" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }} />
+            Below Reorder
+          </Tag>
+        : <Tag color="green" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }} />
+            OK
+          </Tag>,
     },
   ];
 
+  const greeting = (() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  })();
+
   return (
     <div>
-      <Title level={3}>Executive Dashboard</Title>
+      {/* Welcome section */}
+      <div style={{ marginBottom: 28 }}>
+        <h2
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            fontFamily: '"Outfit", sans-serif',
+            color: '#0F172A',
+            margin: '0 0 4px',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          {greeting}, {user?.firstName ?? 'there'}
+        </h2>
+        <Text style={{ color: '#94A3B8', fontSize: 14 }}>
+          Here's what's happening across your facilities today.
+        </Text>
+      </div>
 
       {/* KPI Row */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
@@ -69,7 +103,7 @@ export default function Dashboard() {
             title="Open Alerts"
             value={openAlerts.length}
             loading={alertsLoading}
-            trendColor={openAlerts.length > 0 ? '#ff4d4f' : '#52c41a'}
+            trendColor={openAlerts.length > 0 ? '#DC2626' : '#059669'}
             trend={openAlerts.length > 0 ? 'up' : 'stable'}
             trendValue={openAlerts.length > 0 ? 'Action required' : 'All clear'}
           />
@@ -82,7 +116,7 @@ export default function Dashboard() {
             loading={lossLoading}
             trend={parseFloat(loss?.lossRatePct ?? '0') > 2 ? 'up' : 'stable'}
             trendValue={`${loss?.totalBags ?? 0} bags lost`}
-            trendColor={parseFloat(loss?.lossRatePct ?? '0') > 2 ? '#ff4d4f' : '#52c41a'}
+            trendColor={parseFloat(loss?.lossRatePct ?? '0') > 2 ? '#DC2626' : '#059669'}
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
@@ -93,7 +127,7 @@ export default function Dashboard() {
             loading={transfersLoading}
             trend={totalShortage > 0 ? 'down' : 'stable'}
             trendValue={totalShortage > 0 ? 'Investigate' : 'No shortages'}
-            trendColor={totalShortage > 0 ? '#faad14' : '#52c41a'}
+            trendColor={totalShortage > 0 ? '#D97706' : '#059669'}
           />
         </Col>
       </Row>
@@ -102,8 +136,23 @@ export default function Dashboard() {
         {/* Stock by Store */}
         <Col xs={24} lg={14}>
           <Card
-            title={<><DatabaseOutlined /> Stock by Store</>}
-            extra={<Link to="/reports/stock-summary"><Text type="secondary">View Full Report</Text></Link>}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  background: '#EFF6FF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <DatabaseOutlined style={{ color: '#2563EB', fontSize: 14 }} />
+                </div>
+                <span>Stock by Store</span>
+              </div>
+            }
+            extra={<Link to="/reports/stock-summary"><Text style={{ color: '#2563EB', fontSize: 13, fontWeight: 500 }}>View Report</Text></Link>}
             loading={stockLoading}
           >
             {stockError && <QueryErrorAlert error={stockErr} onRetry={refetchStock} />}
@@ -122,14 +171,29 @@ export default function Dashboard() {
         {/* Open Alerts */}
         <Col xs={24} lg={10}>
           <Card
-            title={<><AlertOutlined /> Recent Alerts</>}
-            extra={<Link to="/alerts"><Text type="secondary">View All</Text></Link>}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  background: '#FEF2F2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <AlertOutlined style={{ color: '#DC2626', fontSize: 14 }} />
+                </div>
+                <span>Recent Alerts</span>
+              </div>
+            }
+            extra={<Link to="/alerts"><Text style={{ color: '#2563EB', fontSize: 13, fontWeight: 500 }}>View All</Text></Link>}
             loading={alertsLoading}
           >
             {alertsError && <QueryErrorAlert error={alertsErr} onRetry={refetchAlerts} />}
             {!alertsError && openAlerts.length === 0 ? (
               <Space style={{ padding: 16 }}>
-                <CheckCircleFilled style={{ color: '#52c41a', fontSize: 20 }} />
+                <CheckCircleFilled style={{ color: '#059669', fontSize: 20 }} />
                 <Text>No open alerts</Text>
               </Space>
             ) : !alertsError && (
@@ -139,8 +203,8 @@ export default function Dashboard() {
                 renderItem={(alert) => (
                   <List.Item>
                     <List.Item.Meta
-                      avatar={<ExclamationCircleFilled style={{ color: severityHex[alert.severity] ?? '#1677ff', fontSize: 18, marginTop: 4 }} />}
-                      title={alert.title}
+                      avatar={<ExclamationCircleFilled style={{ color: severityHex[alert.severity] ?? '#2563EB', fontSize: 18, marginTop: 4 }} />}
+                      title={<span style={{ fontWeight: 600, fontSize: 13, color: '#1E293B' }}>{alert.title}</span>}
                       description={
                         <Space size={4}>
                           <Tag color={alertSeverityColors[alert.severity] ?? 'blue'}>{alert.severity}</Tag>
@@ -160,21 +224,43 @@ export default function Dashboard() {
         {/* Loss Trend */}
         <Col xs={24} lg={14}>
           <Card
-            title={<><WarningOutlined /> Monthly Loss Trend</>}
-            extra={<Link to="/loss/summary"><Text type="secondary">View Full Report</Text></Link>}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  background: '#FFFBEB',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <WarningOutlined style={{ color: '#D97706', fontSize: 14 }} />
+                </div>
+                <span>Monthly Loss Trend</span>
+              </div>
+            }
+            extra={<Link to="/loss/summary"><Text style={{ color: '#2563EB', fontSize: 13, fontWeight: 500 }}>View Report</Text></Link>}
             loading={lossLoading}
           >
             {lossError && <QueryErrorAlert error={lossErr} onRetry={refetchLoss} />}
             {!lossError && loss?.monthlyTrend && loss.monthlyTrend.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <AreaChart data={loss.monthlyTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis yAxisId="bags" orientation="left" />
-                  <YAxis yAxisId="pct" orientation="right" unit="%" />
-                  <Tooltip />
-                  <Area yAxisId="bags" type="monotone" dataKey="totalBags" stroke="#1565C0" fill="#1565C0" fillOpacity={0.2} name="Bags Lost" />
-                  <Area yAxisId="pct" type="monotone" dataKey="lossRatePct" stroke="#ff4d4f" fill="#ff4d4f" fillOpacity={0.1} name="Loss Rate %" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94A3B8' }} />
+                  <YAxis yAxisId="bags" orientation="left" tick={{ fontSize: 12, fill: '#94A3B8' }} />
+                  <YAxis yAxisId="pct" orientation="right" unit="%" tick={{ fontSize: 12, fill: '#94A3B8' }} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 10,
+                      border: '1px solid #E2E8F0',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      fontSize: 13,
+                    }}
+                  />
+                  <Area yAxisId="bags" type="monotone" dataKey="totalBags" stroke="#2563EB" fill="#2563EB" fillOpacity={0.1} strokeWidth={2} name="Bags Lost" />
+                  <Area yAxisId="pct" type="monotone" dataKey="lossRatePct" stroke="#DC2626" fill="#DC2626" fillOpacity={0.05} strokeWidth={2} name="Loss Rate %" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : !lossError && (
@@ -186,13 +272,28 @@ export default function Dashboard() {
         {/* Reorder Alerts */}
         <Col xs={24} lg={10}>
           <Card
-            title={<><SwapOutlined /> Stores Below Reorder Point</>}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  background: '#F0FDFA',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <SwapOutlined style={{ color: '#0D9488', fontSize: 14 }} />
+                </div>
+                <span>Stores Below Reorder Point</span>
+              </div>
+            }
             loading={stockLoading}
           >
             {transfersError && <QueryErrorAlert error={transfersErr} onRetry={refetchTransfers} />}
             {!transfersError && storesBelow.length === 0 ? (
               <Space style={{ padding: 16 }}>
-                <CheckCircleFilled style={{ color: '#52c41a', fontSize: 20 }} />
+                <CheckCircleFilled style={{ color: '#059669', fontSize: 20 }} />
                 <Text>All stores above reorder point</Text>
               </Space>
             ) : !transfersError && (
@@ -202,8 +303,8 @@ export default function Dashboard() {
                 renderItem={(store) => (
                   <List.Item>
                     <List.Item.Meta
-                      avatar={<WarningOutlined style={{ color: '#ff4d4f', fontSize: 18, marginTop: 4 }} />}
-                      title={store.storeName}
+                      avatar={<WarningOutlined style={{ color: '#DC2626', fontSize: 18, marginTop: 4 }} />}
+                      title={<span style={{ fontWeight: 600, fontSize: 13, color: '#1E293B' }}>{store.storeName}</span>}
                       description={`${formatNumber(store.totalBags)} bags / Reorder at ${store.reorderPoint}`}
                     />
                   </List.Item>
