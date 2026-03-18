@@ -1,5 +1,9 @@
 .DS_Store
 .env
+.env.local
+.env.development
+.env.test
+.env.production
 /node_modules/
 
 # Next.js
@@ -14,3 +18,5 @@ npm-debug.log*
 # Misc
 *.tsbuildinfo
 next-env.d.ts
+
+/.claude/
