@@ -234,7 +234,7 @@ B6. [WEB] Add missing reports: Stock Movement Summary, Anomaly History,
     Required: Add report cards to hub, create API endpoints in reportsApi.ts, implement
     report pages.
 
-B7. [WEB] Implement store edit page
+B7. [WEB] Implement store edit page 
     Module: Admin — Store Management
     Current state: Store list exists with create page, but no edit page for updating
     existing stores (name, address, tier, parent store, ROP configs).
