@@ -15,7 +15,10 @@
       "Bash(ls:*)",
       "Bash(timeout 30 npx next:*)",
       "Bash(npx next:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(find C:\\\\Users\\\\X1 Carbon\\\\desktop\\\\projects\\\\KAMATS_WEB\\\\components:*)",
+      "Bash(find C:\\\\Users\\\\X1 Carbon\\\\desktop\\\\projects\\\\KAMATS_WEB\\\\app\\\\\\(authenticated\\):*)",
+      "Bash(du:*)"
     ]
   }
 }
