@@ -2,12 +2,17 @@ import { baseApi } from '@/lib/store/baseApi';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
   ConsumptionEntry, ConsumptionListParams,
+  CreateConsumptionRequest,
   AcknowledgeAnomalyRequest,
 } from '@/lib/api/types/consumption';
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const consumptionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    createConsumption: builder.mutation<ConsumptionEntry, CreateConsumptionRequest>({
+      query: (body) => ({ url: endpoints.consumption.list, method: 'POST', data: body }),
+      invalidatesTags: ['Consumption'],
+    }),
     getConsumptionEntries: builder.query<PaginatedResponse<ConsumptionEntry>, ConsumptionListParams>({
       query: (params) => ({ url: endpoints.consumption.list, params }),
       providesTags: ['Consumption'],
@@ -28,6 +33,7 @@ export const consumptionApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useCreateConsumptionMutation,
   useGetConsumptionEntriesQuery,
   useGetConsumptionEntryQuery,
   useSubmitConsumptionMutation,
