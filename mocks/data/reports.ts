@@ -2,6 +2,8 @@ import type {
   StockSummaryReport, ConsumptionAnalyticsReport,
   TransferReconciliationReport, SupplierPerformanceReport,
   LotLifecycleReport, ItemHistoryReport,
+  StockMovementSummaryReport, AnomalyHistoryReport,
+  PhysicalCountResultsReport, ProcurementPipelineReport,
 } from '@/lib/api/types/reports';
 
 export const mockStockSummary: StockSummaryReport = {
@@ -112,4 +114,66 @@ export const mockItemHistoryReports: Record<string, ItemHistoryReport> = {
       { eventType: 'CONSUMPTION', timestamp: '2026-03-13T16:00:00Z', actorName: 'Operator', storeName: 'Challawa Treatment Plant', locationCode: null, referenceNumber: 'CON-2026-0050', details: 'Consumed 27.5 kg for dosing — 22.5 kg remaining' },
     ],
   },
+};
+
+export const mockStockMovementSummary: StockMovementSummaryReport = {
+  period: { from: '2026-03-01', to: '2026-03-23' },
+  totalReceived: 490,
+  totalIssued: 118,
+  totalTransferred: 80,
+  movements: [
+    { date: '2026-03-12', movementType: 'Receipt', referenceNumber: 'GRN-2026-0001', storeName: 'Central Store — Main', bags: 298, weightKg: '14900.0000', direction: 'in', notes: 'PO-2026-0001 delivery from Chemtrade Nigeria' },
+    { date: '2026-03-10', movementType: 'Receipt', referenceNumber: 'GRN-2026-0003', storeName: 'Central Store — Main', bags: 192, weightKg: '9600.0000', direction: 'in', notes: 'PO-2026-0004 delivery from Al-Falah' },
+    { date: '2026-03-13', movementType: 'Transfer', referenceNumber: 'STO-2026-0010', storeName: 'Central Store — Main', bags: 30, weightKg: '1500.0000', direction: 'out', notes: 'Transfer to Challawa WTP' },
+    { date: '2026-03-13', movementType: 'Transfer', referenceNumber: 'STO-2026-0010', storeName: 'Challawa Treatment Plant', bags: 30, weightKg: '1500.0000', direction: 'in', notes: 'Received from Central Store' },
+    { date: '2026-03-14', movementType: 'Transfer', referenceNumber: 'STO-2026-0011', storeName: 'Central Store — Main', bags: 20, weightKg: '1000.0000', direction: 'out', notes: 'Transfer to Tamburawa WTP' },
+    { date: '2026-03-14', movementType: 'Transfer', referenceNumber: 'STO-2026-0011', storeName: 'Tamburawa Treatment Plant', bags: 18, weightKg: '900.0000', direction: 'in', notes: 'Received (2 damaged in transit)' },
+    { date: '2026-03-13', movementType: 'Consumption', referenceNumber: 'CON-2026-0050', storeName: 'Challawa Treatment Plant', bags: 10, weightKg: '500.0000', direction: 'out', notes: 'Water treatment dosing' },
+    { date: '2026-03-14', movementType: 'WriteOff', referenceNumber: 'WO-2026-0003', storeName: 'Central Store — Main', bags: 2, weightKg: '100.0000', direction: 'out', notes: 'Transit damage — STO-2026-0011' },
+    { date: '2026-03-15', movementType: 'Consumption', referenceNumber: 'CON-2026-0055', storeName: 'Tamburawa Treatment Plant', bags: 6, weightKg: '300.0000', direction: 'out', notes: 'Water treatment dosing' },
+    { date: '2026-03-18', movementType: 'Issue', referenceNumber: 'ISS-2026-0012', storeName: 'Challawa WTP Unit Store', bags: 50, weightKg: '2500.0000', direction: 'out', notes: 'Issued to treatment plant operator' },
+    { date: '2026-03-20', movementType: 'Issue', referenceNumber: 'ISS-2026-0015', storeName: 'Tamburawa WTP Unit Store', bags: 50, weightKg: '2500.0000', direction: 'out', notes: 'Issued to treatment plant operator' },
+  ],
+};
+
+export const mockAnomalyHistory: AnomalyHistoryReport = {
+  period: { from: '2026-02-01', to: '2026-03-23' },
+  totalAnomalies: 6,
+  resolvedCount: 4,
+  unresolvedCount: 2,
+  entries: [
+    { id: 'anom-001', timestamp: '2026-03-13T16:30:00Z', storeName: 'Challawa Treatment Plant', referenceNumber: 'CON-2026-0050', volumeM3: '4200', consumedKg: '65.0000', rateKgM3: '0.01548', configuredRate: '0.012', deviationPct: '29.00', anomalyLevel: 'HighAnomaly', resolved: true, resolution: 'Turbidity spike required higher dose — verified by supervisor' },
+    { id: 'anom-002', timestamp: '2026-03-10T14:00:00Z', storeName: 'Challawa Treatment Plant', referenceNumber: 'CON-2026-0042', volumeM3: '3800', consumedKg: '52.0000', rateKgM3: '0.01368', configuredRate: '0.012', deviationPct: '14.00', anomalyLevel: 'Elevated', resolved: true, resolution: 'Seasonal variation — within acceptable bounds' },
+    { id: 'anom-003', timestamp: '2026-03-08T10:00:00Z', storeName: 'Challawa Treatment Plant', referenceNumber: 'CON-2026-0038', volumeM3: '4500', consumedKg: '72.0000', rateKgM3: '0.01600', configuredRate: '0.012', deviationPct: '33.33', anomalyLevel: 'HighAnomaly', resolved: true, resolution: 'Calibration error on dosing pump — corrected' },
+    { id: 'anom-004', timestamp: '2026-03-18T09:00:00Z', storeName: 'Tamburawa Treatment Plant', referenceNumber: 'CON-2026-0060', volumeM3: '3200', consumedKg: '52.0000', rateKgM3: '0.01625', configuredRate: '0.014', deviationPct: '16.07', anomalyLevel: 'Elevated', resolved: false, resolution: null },
+    { id: 'anom-005', timestamp: '2026-03-05T11:00:00Z', storeName: 'Challawa Treatment Plant', referenceNumber: 'CON-2026-0030', volumeM3: '5000', consumedKg: '35.0000', rateKgM3: '0.00700', configuredRate: '0.012', deviationPct: '-41.67', anomalyLevel: 'LowConsumption', resolved: true, resolution: 'Partial bag used — remainder returned to store' },
+    { id: 'anom-006', timestamp: '2026-03-20T15:00:00Z', storeName: 'Tamburawa Treatment Plant', referenceNumber: 'CON-2026-0068', volumeM3: '2800', consumedKg: '48.0000', rateKgM3: '0.01714', configuredRate: '0.014', deviationPct: '22.43', anomalyLevel: 'HighAnomaly', resolved: false, resolution: null },
+  ],
+};
+
+export const mockPhysicalCountResults: PhysicalCountResultsReport = {
+  period: { from: '2025-10-01', to: '2026-03-23' },
+  totalCounts: 5,
+  avgVariancePct: '1.84',
+  entries: [
+    { countId: 'cnt-001', storeName: 'Central Store — Main', countDate: '2026-03-15', countType: 'Monthly', totalItems: 250, matchedItems: 246, varianceItems: 4, variancePct: '1.60', status: 'Completed' },
+    { countId: 'cnt-002', storeName: 'Challawa WTP Unit Store', countDate: '2026-03-14', countType: 'Monthly', totalItems: 35, matchedItems: 35, varianceItems: 0, variancePct: '0.00', status: 'Completed' },
+    { countId: 'cnt-003', storeName: 'Tamburawa WTP Unit Store', countDate: '2026-03-14', countType: 'Monthly', totalItems: 18, matchedItems: 17, varianceItems: 1, variancePct: '5.56', status: 'UnderReview' },
+    { countId: 'cnt-004', storeName: 'Central Store — Main', countDate: '2026-02-15', countType: 'Monthly', totalItems: 310, matchedItems: 307, varianceItems: 3, variancePct: '0.97', status: 'Completed' },
+    { countId: 'cnt-005', storeName: 'Challawa WTP Unit Store', countDate: '2026-02-14', countType: 'Quarterly', totalItems: 60, matchedItems: 59, varianceItems: 1, variancePct: '1.67', status: 'Completed' },
+  ],
+};
+
+export const mockProcurementPipeline: ProcurementPipelineReport = {
+  openPRs: 3,
+  pendingPOs: 2,
+  expectedDeliveries: 1,
+  entries: [
+    { type: 'PR', referenceNumber: 'PR-2026-0012', status: 'Submitted', storeName: 'Challawa WTP Unit Store', quantityBags: 100, expectedDate: '2026-04-01', daysInStatus: 3, assignedTo: 'Amina Yusuf' },
+    { type: 'PR', referenceNumber: 'PR-2026-0013', status: 'Submitted', storeName: 'Tamburawa WTP Unit Store', quantityBags: 80, expectedDate: '2026-04-05', daysInStatus: 2, assignedTo: 'Amina Yusuf' },
+    { type: 'PR', referenceNumber: 'PR-2026-0014', status: 'Approved', storeName: 'Central Store — Main', quantityBags: 200, expectedDate: '2026-04-10', daysInStatus: 1, assignedTo: null },
+    { type: 'PO', referenceNumber: 'PO-2026-0005', status: 'Submitted', storeName: 'Central Store — Main', quantityBags: 150, expectedDate: '2026-04-08', daysInStatus: 5, assignedTo: 'Manager Review' },
+    { type: 'PO', referenceNumber: 'PO-2026-0006', status: 'ManagerApproved', storeName: 'Central Store — Main', quantityBags: 200, expectedDate: '2026-04-15', daysInStatus: 2, assignedTo: 'Finance Review' },
+    { type: 'PO', referenceNumber: 'PO-2026-0003', status: 'Issued', storeName: 'Central Store — Main', quantityBags: 300, expectedDate: '2026-03-28', daysInStatus: 8, assignedTo: 'Chemtrade Nigeria Ltd' },
+  ],
 };

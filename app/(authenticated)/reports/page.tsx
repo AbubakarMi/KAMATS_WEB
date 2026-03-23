@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Database, BarChart3, ArrowLeftRight, Users, AlertTriangle, GitBranch, Package } from 'lucide-react';
+import { Database, BarChart3, ArrowLeftRight, Users, AlertTriangle, GitBranch, Package, TrendingUp, ShieldAlert, ClipboardCheck, Workflow } from 'lucide-react';
 
 const reportCards = [
   {
@@ -45,6 +45,30 @@ const reportCards = [
     title: 'Item History',
     description: 'Full chain of custody for an individual item — every movement, transfer, and consumption.',
     icon: <Package className="h-7 w-7 text-cyan-600" />,
+  },
+  {
+    key: 'stock-movement-summary',
+    title: 'Stock Movement Summary',
+    description: 'All stock movements with direction, type, and weight for a given period.',
+    icon: <TrendingUp className="h-7 w-7 text-indigo-600" />,
+  },
+  {
+    key: 'anomaly-history',
+    title: 'Anomaly History',
+    description: 'Consumption anomalies with deviation analysis and resolution tracking.',
+    icon: <ShieldAlert className="h-7 w-7 text-orange-600" />,
+  },
+  {
+    key: 'physical-count-results',
+    title: 'Physical Count Results',
+    description: 'Stock count results with variance analysis across stores and count types.',
+    icon: <ClipboardCheck className="h-7 w-7 text-pink-600" />,
+  },
+  {
+    key: 'procurement-pipeline',
+    title: 'Procurement Pipeline',
+    description: 'Open PRs, pending POs, and expected deliveries with aging analysis.',
+    icon: <Workflow className="h-7 w-7 text-sky-600" />,
   },
 ];
 

@@ -19,6 +19,10 @@ import {
   useGetLossSummaryReportQuery,
   useGetLotLifecycleReportQuery,
   useGetItemHistoryReportQuery,
+  useGetStockMovementSummaryQuery,
+  useGetAnomalyHistoryQuery,
+  useGetPhysicalCountResultsQuery,
+  useGetProcurementPipelineQuery,
 } from '@/lib/features/reports/reportsApi';
 import { useGetLotsQuery } from '@/lib/features/inventory/lotsApi';
 import { useGetLotQuery } from '@/lib/features/inventory/lotsApi';
@@ -463,6 +467,203 @@ function ItemHistoryView() {
   );
 }
 
+function StockMovementSummaryView() {
+  const { data, isLoading } = useGetStockMovementSummaryQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Received: {formatNumber(data.totalReceived)} bags</span>
+        <span>Issued: {formatNumber(data.totalIssued)} bags</span>
+        <span>Transferred: {formatNumber(data.totalTransferred)} bags</span>
+      </div>
+      <p className="text-sm text-slate-500 mb-3">{data.period.from} to {data.period.to}</p>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Date</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Type</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Reference</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Bags</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Weight</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Direction</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.movements.map((m, i) => (
+            <tr key={i} className="border-b border-slate-50">
+              <td className="py-2">{formatDate(m.date)}</td>
+              <td className="py-2">{m.movementType}</td>
+              <td className="py-2">{m.referenceNumber}</td>
+              <td className="py-2">{m.storeName}</td>
+              <td className="text-right py-2">{m.bags}</td>
+              <td className="text-right py-2">{formatWeight(m.weightKg)}</td>
+              <td className="py-2">
+                <span className={`text-xs px-1.5 py-0.5 rounded ${m.direction === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                  {m.direction === 'in' ? 'IN' : 'OUT'}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function AnomalyHistoryView() {
+  const { data, isLoading } = useGetAnomalyHistoryQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Total Anomalies: {data.totalAnomalies}</span>
+        <span className="text-emerald-600">Resolved: {data.resolvedCount}</span>
+        <span className="text-red-600">Unresolved: {data.unresolvedCount}</span>
+      </div>
+      <p className="text-sm text-slate-500 mb-3">{data.period.from} to {data.period.to}</p>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Date</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Reference</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Volume (m³)</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Consumed</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Deviation</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Level</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.entries.map((e) => {
+            const dev = parseFloat(e.deviationPct);
+            const devColor = dev > 20 ? 'text-red-600' : dev > 10 ? 'text-amber-600' : 'text-slate-700';
+            const levelColor = e.anomalyLevel === 'Critical' ? 'bg-red-100 text-red-700' : e.anomalyLevel === 'Warning' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700';
+            return (
+              <tr key={e.id} className="border-b border-slate-50">
+                <td className="py-2">{formatDateTime(e.timestamp)}</td>
+                <td className="py-2">{e.storeName}</td>
+                <td className="py-2">{e.referenceNumber}</td>
+                <td className="text-right py-2">{e.volumeM3}</td>
+                <td className="text-right py-2">{formatWeight(e.consumedKg)}</td>
+                <td className={`text-right py-2 ${devColor}`}>{dev.toFixed(1)}%</td>
+                <td className="py-2"><span className={`text-xs px-1.5 py-0.5 rounded ${levelColor}`}>{e.anomalyLevel}</span></td>
+                <td className="py-2">
+                  {e.resolved
+                    ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Resolved</span>
+                    : <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Open</span>
+                  }
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function PhysicalCountResultsView() {
+  const { data, isLoading } = useGetPhysicalCountResultsQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Total Counts: {data.totalCounts}</span>
+        <span>Avg Variance: {parseFloat(data.avgVariancePct).toFixed(1)}%</span>
+      </div>
+      <p className="text-sm text-slate-500 mb-3">{data.period.from} to {data.period.to}</p>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Date</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Type</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Total Items</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Matched</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Variance</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Variance %</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.entries.map((e) => {
+            const vPct = parseFloat(e.variancePct);
+            const vColor = vPct > 5 ? 'text-red-600' : vPct > 2 ? 'text-amber-600' : 'text-emerald-600';
+            return (
+              <tr key={e.countId} className="border-b border-slate-50">
+                <td className="py-2">{e.storeName}</td>
+                <td className="py-2">{formatDate(e.countDate)}</td>
+                <td className="py-2">{e.countType}</td>
+                <td className="text-right py-2">{e.totalItems}</td>
+                <td className="text-right py-2">{e.matchedItems}</td>
+                <td className="text-right py-2">{e.varianceItems}</td>
+                <td className={`text-right py-2 ${vColor}`}>{vPct.toFixed(1)}%</td>
+                <td className="py-2"><StatusBadge status={e.status} /></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function ProcurementPipelineView() {
+  const { data, isLoading } = useGetProcurementPipelineQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Open PRs: {data.openPRs}</span>
+        <span>Pending POs: {data.pendingPOs}</span>
+        <span>Expected Deliveries: {data.expectedDeliveries}</span>
+      </div>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Type</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Reference</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Status</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Qty (bags)</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Expected</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Days in Status</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Assigned To</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.entries.map((e, i) => {
+            const daysColor = e.daysInStatus > 7 ? 'text-red-600' : e.daysInStatus > 3 ? 'text-amber-600' : 'text-slate-700';
+            return (
+              <tr key={i} className="border-b border-slate-50">
+                <td className="py-2">
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${e.type === 'PR' ? 'bg-blue-100 text-blue-700' : e.type === 'PO' ? 'bg-violet-100 text-violet-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {e.type}
+                  </span>
+                </td>
+                <td className="py-2">{e.referenceNumber}</td>
+                <td className="py-2"><StatusBadge status={e.status} /></td>
+                <td className="py-2">{e.storeName}</td>
+                <td className="text-right py-2">{e.quantityBags}</td>
+                <td className="py-2">{formatDate(e.expectedDate)}</td>
+                <td className={`text-right py-2 ${daysColor}`}>{e.daysInStatus}</td>
+                <td className="py-2">{e.assignedTo ?? '—'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 const reportComponents: Record<string, { title: string; component: React.FC }> = {
   'stock-summary': { title: 'Stock Balance Summary', component: StockSummaryView },
   'consumption-analytics': { title: 'Consumption Analytics', component: ConsumptionAnalyticsView },
@@ -471,6 +672,10 @@ const reportComponents: Record<string, { title: string; component: React.FC }> =
   'loss-summary': { title: 'Loss Summary', component: LossSummaryView },
   'lot-lifecycle': { title: 'Lot Lifecycle', component: LotLifecycleView },
   'item-history': { title: 'Item History', component: ItemHistoryView },
+  'stock-movement-summary': { title: 'Stock Movement Summary', component: StockMovementSummaryView },
+  'anomaly-history': { title: 'Anomaly History', component: AnomalyHistoryView },
+  'physical-count-results': { title: 'Physical Count Results', component: PhysicalCountResultsView },
+  'procurement-pipeline': { title: 'Procurement Pipeline', component: ProcurementPipelineView },
 };
 
 export default function ReportViewerPage() {

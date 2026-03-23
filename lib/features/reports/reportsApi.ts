@@ -7,6 +7,10 @@ import type {
   SupplierPerformanceReport,
   LotLifecycleReport,
   ItemHistoryReport,
+  StockMovementSummaryReport,
+  AnomalyHistoryReport,
+  PhysicalCountResultsReport,
+  ProcurementPipelineReport,
 } from '@/lib/api/types/reports';
 import type { LossSummary, LossSummaryParams } from '@/lib/api/types/loss';
 
@@ -33,6 +37,18 @@ export const reportsApi = baseApi.injectEndpoints({
     getItemHistoryReport: builder.query<ItemHistoryReport, string>({
       query: (itemId) => ({ url: endpoints.reports.itemHistory(itemId) }),
     }),
+    getStockMovementSummary: builder.query<StockMovementSummaryReport, void>({
+      query: () => ({ url: endpoints.reports.stockMovementSummary }),
+    }),
+    getAnomalyHistory: builder.query<AnomalyHistoryReport, void>({
+      query: () => ({ url: endpoints.reports.anomalyHistory }),
+    }),
+    getPhysicalCountResults: builder.query<PhysicalCountResultsReport, void>({
+      query: () => ({ url: endpoints.reports.physicalCountResults }),
+    }),
+    getProcurementPipeline: builder.query<ProcurementPipelineReport, void>({
+      query: () => ({ url: endpoints.reports.procurementPipeline }),
+    }),
   }),
 });
 
@@ -44,4 +60,8 @@ export const {
   useGetLossSummaryReportQuery,
   useGetLotLifecycleReportQuery,
   useGetItemHistoryReportQuery,
+  useGetStockMovementSummaryQuery,
+  useGetAnomalyHistoryQuery,
+  useGetPhysicalCountResultsQuery,
+  useGetProcurementPipelineQuery,
 } = reportsApi;
