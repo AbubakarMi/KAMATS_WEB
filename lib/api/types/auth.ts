@@ -77,6 +77,16 @@ export interface BiometricVerifyResponse {
 }
 
 // --- PIN ---
+export interface PinSetupRequest {
+  currentPin?: string;
+  newPin: string;
+}
+
+export interface PinSetupResponse {
+  success: boolean;
+  updatedAt: Timestamp;
+}
+
 export interface PinVerifyRequest {
   userId: UUID;
   pin: string;
