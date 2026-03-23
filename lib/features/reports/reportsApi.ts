@@ -5,6 +5,8 @@ import type {
   ConsumptionAnalyticsReport,
   TransferReconciliationReport, TransferReconciliationParams,
   SupplierPerformanceReport,
+  LotLifecycleReport,
+  ItemHistoryReport,
 } from '@/lib/api/types/reports';
 import type { LossSummary, LossSummaryParams } from '@/lib/api/types/loss';
 
@@ -25,6 +27,12 @@ export const reportsApi = baseApi.injectEndpoints({
     getLossSummaryReport: builder.query<LossSummary, LossSummaryParams | void>({
       query: (params) => ({ url: endpoints.reports.lossSummary, params: params ?? undefined }),
     }),
+    getLotLifecycleReport: builder.query<LotLifecycleReport, string>({
+      query: (lotId) => ({ url: endpoints.reports.lotLifecycle(lotId) }),
+    }),
+    getItemHistoryReport: builder.query<ItemHistoryReport, string>({
+      query: (itemId) => ({ url: endpoints.reports.itemHistory(itemId) }),
+    }),
   }),
 });
 
@@ -34,4 +42,6 @@ export const {
   useGetTransferReconciliationQuery,
   useGetSupplierPerformanceQuery,
   useGetLossSummaryReportQuery,
+  useGetLotLifecycleReportQuery,
+  useGetItemHistoryReportQuery,
 } = reportsApi;

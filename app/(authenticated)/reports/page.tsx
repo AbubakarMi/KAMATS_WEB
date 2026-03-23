@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Database, BarChart3, ArrowLeftRight, Users, AlertTriangle } from 'lucide-react';
+import { Database, BarChart3, ArrowLeftRight, Users, AlertTriangle, GitBranch, Package } from 'lucide-react';
 
 const reportCards = [
   {
@@ -33,6 +33,18 @@ const reportCards = [
     title: 'Loss Summary',
     description: 'Write-off analysis by category and store with monthly trends.',
     icon: <AlertTriangle className="h-7 w-7 text-red-600" />,
+  },
+  {
+    key: 'lot-lifecycle',
+    title: 'Lot Lifecycle',
+    description: 'End-to-end lifecycle of a lot from GRN receipt through distribution and consumption.',
+    icon: <GitBranch className="h-7 w-7 text-teal-600" />,
+  },
+  {
+    key: 'item-history',
+    title: 'Item History',
+    description: 'Full chain of custody for an individual item — every movement, transfer, and consumption.',
+    icon: <Package className="h-7 w-7 text-cyan-600" />,
   },
 ];
 
