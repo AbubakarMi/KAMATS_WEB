@@ -9,6 +9,7 @@ export const endpoints = {
     logout: '/auth/logout',
     biometricEnroll: '/auth/biometric/enroll',
     biometricVerify: '/auth/biometric/verify',
+    changePassword: '/auth/change-password',
     pinSetup: '/auth/pin/setup',
     pinVerify: '/auth/pin/verify',
   },

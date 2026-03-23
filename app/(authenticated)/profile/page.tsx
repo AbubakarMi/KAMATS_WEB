@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Shield, Smartphone, KeyRound } from 'lucide-react';
+import { Shield, Smartphone, KeyRound, Lock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +14,15 @@ import { DescriptionList } from '@/components/data-display/DescriptionList';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
 
 import { useAuth } from '@/lib/hooks';
-import { usePinSetupMutation } from '@/lib/features/auth/authApi';
-import { pinSetupSchema } from '@/lib/schemas/auth';
+import { useChangePasswordMutation, usePinSetupMutation } from '@/lib/features/auth/authApi';
+import { changePasswordSchema, pinSetupSchema } from '@/lib/schemas/auth';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
+
+type PasswordFormValues = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
 type PinFormValues = {
   currentPin: string;
@@ -26,34 +32,67 @@ type PinFormValues = {
 
 export default function ProfilePage() {
   const { user, storeAssignments } = useAuth();
+
+  // Password change
+  const [changePassword, { isLoading: changingPassword }] = useChangePasswordMutation();
+  const [pwConfirmOpen, setPwConfirmOpen] = useState(false);
+  const [pendingPwValues, setPendingPwValues] = useState<PasswordFormValues | null>(null);
+
+  const pwForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
+    mode: 'onBlur',
+    defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
+  });
+
+  const onSubmitPassword = (values: PasswordFormValues) => {
+    setPendingPwValues(values);
+    setPwConfirmOpen(true);
+  };
+
+  const handleConfirmPassword = async () => {
+    if (!pendingPwValues) return;
+    try {
+      await changePassword({
+        currentPassword: pendingPwValues.currentPassword,
+        newPassword: pendingPwValues.newPassword,
+      }).unwrap();
+      toast.success('Password changed successfully');
+      pwForm.reset({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      const fallback = setApiFieldErrors(pwForm.setError, err);
+      if (fallback) toast.error(fallback);
+    }
+  };
+
+  // PIN setup
   const [pinSetup, { isLoading: settingPin }] = usePinSetupMutation();
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingValues, setPendingValues] = useState<PinFormValues | null>(null);
+  const [pinConfirmOpen, setPinConfirmOpen] = useState(false);
+  const [pendingPinValues, setPendingPinValues] = useState<PinFormValues | null>(null);
   const [hasExistingPin, setHasExistingPin] = useState(false);
 
-  const form = useForm<PinFormValues>({
+  const pinForm = useForm<PinFormValues>({
     resolver: zodResolver(pinSetupSchema),
     mode: 'onBlur',
     defaultValues: { currentPin: '', newPin: '', confirmPin: '' },
   });
 
   const onSubmitPin = (values: PinFormValues) => {
-    setPendingValues(values);
-    setConfirmOpen(true);
+    setPendingPinValues(values);
+    setPinConfirmOpen(true);
   };
 
   const handleConfirmPin = async () => {
-    if (!pendingValues) return;
+    if (!pendingPinValues) return;
     try {
       await pinSetup({
-        newPin: pendingValues.newPin,
-        ...(hasExistingPin && pendingValues.currentPin ? { currentPin: pendingValues.currentPin } : {}),
+        newPin: pendingPinValues.newPin,
+        ...(hasExistingPin && pendingPinValues.currentPin ? { currentPin: pendingPinValues.currentPin } : {}),
       }).unwrap();
       toast.success(hasExistingPin ? 'PIN changed successfully' : 'PIN set up successfully');
       setHasExistingPin(true);
-      form.reset({ currentPin: '', newPin: '', confirmPin: '' });
+      pinForm.reset({ currentPin: '', newPin: '', confirmPin: '' });
     } catch (err) {
-      const fallback = setApiFieldErrors(form.setError, err);
+      const fallback = setApiFieldErrors(pinForm.setError, err);
       if (fallback) toast.error(fallback);
     }
   };
@@ -82,6 +121,50 @@ export default function ProfilePage() {
         )}
       </div>
 
+      {/* Change Password */}
+      <div className="rounded-[14px] border border-slate-200 bg-white p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <Lock className="h-5 w-5 text-amber-600" />
+          <h2 className="text-lg font-semibold text-slate-900">Change Password</h2>
+        </div>
+        <p className="text-sm text-slate-500 mb-5">
+          Update your login password. You will need to enter your current password for verification.
+        </p>
+
+        <form onSubmit={pwForm.handleSubmit(onSubmitPassword)} className="space-y-4 max-w-sm">
+          <div>
+            <Label>Current Password</Label>
+            <Input type="password" {...pwForm.register('currentPassword')} />
+            {pwForm.formState.errors.currentPassword && (
+              <p className="text-xs text-red-500 mt-1">{pwForm.formState.errors.currentPassword.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label>New Password</Label>
+            <Input type="password" placeholder="At least 8 characters" {...pwForm.register('newPassword')} />
+            {pwForm.formState.errors.newPassword && (
+              <p className="text-xs text-red-500 mt-1">{pwForm.formState.errors.newPassword.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label>Confirm New Password</Label>
+            <Input type="password" {...pwForm.register('confirmPassword')} />
+            {pwForm.formState.errors.confirmPassword && (
+              <p className="text-xs text-red-500 mt-1">{pwForm.formState.errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          <div className="pt-2">
+            <Button type="submit" disabled={changingPassword} className="bg-amber-600 hover:bg-amber-700 text-white">
+              <Lock className="h-4 w-4 mr-1.5" />
+              {changingPassword ? 'Updating...' : 'Change Password'}
+            </Button>
+          </div>
+        </form>
+      </div>
+
       {/* PIN Management */}
       <div className="rounded-[14px] border border-slate-200 bg-white p-6">
         <div className="flex items-center gap-2 mb-1">
@@ -92,7 +175,7 @@ export default function ProfilePage() {
           Your PIN is used to confirm identity for critical operations such as STO approvals, GRD confirmations, and consumption submissions.
         </p>
 
-        <form onSubmit={form.handleSubmit(onSubmitPin)} className="space-y-4 max-w-sm">
+        <form onSubmit={pinForm.handleSubmit(onSubmitPin)} className="space-y-4 max-w-sm">
           {hasExistingPin && (
             <div>
               <Label>Current PIN</Label>
@@ -101,10 +184,10 @@ export default function ProfilePage() {
                 inputMode="numeric"
                 maxLength={6}
                 placeholder="Enter current PIN"
-                {...form.register('currentPin')}
+                {...pinForm.register('currentPin')}
               />
-              {form.formState.errors.currentPin && (
-                <p className="text-xs text-red-500 mt-1">{form.formState.errors.currentPin.message}</p>
+              {pinForm.formState.errors.currentPin && (
+                <p className="text-xs text-red-500 mt-1">{pinForm.formState.errors.currentPin.message}</p>
               )}
             </div>
           )}
@@ -116,10 +199,10 @@ export default function ProfilePage() {
               inputMode="numeric"
               maxLength={6}
               placeholder="4-6 digit PIN"
-              {...form.register('newPin')}
+              {...pinForm.register('newPin')}
             />
-            {form.formState.errors.newPin && (
-              <p className="text-xs text-red-500 mt-1">{form.formState.errors.newPin.message}</p>
+            {pinForm.formState.errors.newPin && (
+              <p className="text-xs text-red-500 mt-1">{pinForm.formState.errors.newPin.message}</p>
             )}
           </div>
 
@@ -130,10 +213,10 @@ export default function ProfilePage() {
               inputMode="numeric"
               maxLength={6}
               placeholder="Re-enter PIN"
-              {...form.register('confirmPin')}
+              {...pinForm.register('confirmPin')}
             />
-            {form.formState.errors.confirmPin && (
-              <p className="text-xs text-red-500 mt-1">{form.formState.errors.confirmPin.message}</p>
+            {pinForm.formState.errors.confirmPin && (
+              <p className="text-xs text-red-500 mt-1">{pinForm.formState.errors.confirmPin.message}</p>
             )}
           </div>
 
@@ -170,8 +253,17 @@ export default function ProfilePage() {
       </div>
 
       <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
+        open={pwConfirmOpen}
+        onOpenChange={setPwConfirmOpen}
+        title="Change Password?"
+        description="Are you sure you want to change your login password?"
+        confirmLabel="Change Password"
+        onConfirm={handleConfirmPassword}
+      />
+
+      <ConfirmDialog
+        open={pinConfirmOpen}
+        onOpenChange={setPinConfirmOpen}
         title={hasExistingPin ? 'Change PIN?' : 'Set PIN?'}
         description={hasExistingPin
           ? 'Are you sure you want to change your security PIN?'

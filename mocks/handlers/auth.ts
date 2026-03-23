@@ -70,6 +70,27 @@ export const authHandlers = [
     });
   }),
 
+  // Change Password
+  http.post(`${API}/auth/change-password`, async ({ request }) => {
+    const body = (await request.json()) as { currentPassword: string; newPassword: string };
+    if (!body.currentPassword || body.currentPassword.length < 8) {
+      return HttpResponse.json(
+        { status: 400, code: 'INVALID_PASSWORD', message: 'Current password is incorrect', trace_id: 'mock' },
+        { status: 400 }
+      );
+    }
+    if (!body.newPassword || body.newPassword.length < 8) {
+      return HttpResponse.json(
+        { status: 400, code: 'VALIDATION_ERROR', message: 'New password must be at least 8 characters', trace_id: 'mock' },
+        { status: 400 }
+      );
+    }
+    return HttpResponse.json({
+      data: { success: true, updatedAt: new Date().toISOString() },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
   // PIN Setup
   http.post(`${API}/auth/pin/setup`, async ({ request }) => {
     const body = (await request.json()) as { currentPin?: string; newPin: string };

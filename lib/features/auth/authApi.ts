@@ -6,6 +6,8 @@ import type {
   RefreshRequest,
   RefreshResponse,
   LogoutRequest,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
   PinSetupRequest,
   PinSetupResponse,
   PinVerifyRequest,
@@ -38,6 +40,14 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
+      query: (body) => ({
+        url: endpoints.auth.changePassword,
+        method: 'POST',
+        data: body,
+      }),
+    }),
+
     pinSetup: builder.mutation<PinSetupResponse, PinSetupRequest>({
       query: (body) => ({
         url: endpoints.auth.pinSetup,
@@ -56,4 +66,4 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useLogoutMutation, usePinSetupMutation, usePinVerifyMutation } = authApi;
+export const { useLoginMutation, useLogoutMutation, useChangePasswordMutation, usePinSetupMutation, usePinVerifyMutation } = authApi;

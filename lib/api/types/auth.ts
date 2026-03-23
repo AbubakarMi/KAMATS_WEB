@@ -55,6 +55,17 @@ export interface LogoutRequest {
   refreshToken: string;
 }
 
+// --- Change Password ---
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  updatedAt: Timestamp;
+}
+
 // --- Biometric ---
 export interface BiometricEnrollRequest {
   biometricTemplate: string;
