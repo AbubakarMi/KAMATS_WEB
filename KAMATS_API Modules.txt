@@ -1,0 +1,232 @@
+KAMATS_API Modules
+
+  Authentication
+
+  1. Login
+  2. Refresh Token
+  3. Logout
+  4. Biometric Enroll
+  5. Biometric Verify
+  6. PIN Verify
+
+  User Management
+
+  7. List Users
+  8. Create User
+  9. Update User
+  10. Deactivate User
+  11. Unlock User
+  12. Assign User to Store
+  13. Remove User Store Assignment
+
+  Store Management
+
+  14. List Stores
+  15. Create Store
+  16. Update Store
+
+  System Configuration
+
+  17. List Configuration
+  18. Update Configuration
+
+  Device Management
+
+  19. Register Device
+  20. Deregister Device
+  21. List Devices
+
+  Supplier Management
+
+  22. Register Supplier
+  23. List Suppliers
+  24. Get Supplier Details
+  25. Approve Supplier
+  26. Reject Supplier
+  27. Suspend Supplier
+  28. Deactivate Supplier
+  29. Reactivate Supplier
+  30. Supplier Scorecard
+
+  Purchase Requisitions
+
+  31. Create Purchase Requisition
+  32. List Purchase Requisitions
+  33. Get Purchase Requisition Details
+  34. Submit Purchase Requisition
+  35. Approve Purchase Requisition
+  36. Reject Purchase Requisition
+
+  Purchase Orders
+
+  37. Create Purchase Order
+  38. List Purchase Orders
+  39. Get Purchase Order Details
+  40. Submit Purchase Order
+  41. Manager Approve Purchase Order
+  42. Manager Reject Purchase Order
+  43. Finance Approve Purchase Order
+  44. Finance Reject Purchase Order
+  45. Request Purchase Order Amendment
+  46. Manager Approve Amendment
+  47. Finance Approve Amendment
+
+  Driver Visit Records
+
+  48. Create Driver Visit Record
+  49. List Driver Visit Records
+  50. Get Driver Visit Record Details
+  51. Link Purchase Order to Driver Visit
+
+  Quality Inspections
+
+  52. Create Quality Inspection
+  53. Submit Inspection Result
+  54. Get Inspection Details
+
+  Weighbridge
+
+  55. Create Weighbridge Ticket
+  56. Record Gross Weight
+  57. Record Tare Weight
+  58. Supervisor Override Variance
+  59. Supervisor Reject Delivery
+  60. List Weighbridge Tickets
+  61. Get Weighbridge Ticket Details
+
+  Goods Received Notes
+
+  62. Create GRN
+  63. Record Bag Count
+  64. Submit GRN
+  65. List GRNs
+  66. Get GRN Details
+
+  Lots and Items
+
+  67. List Lots
+  68. Get Lot Details
+  69. Generate QR Labels
+  70. Scan Label
+  71. Lookup Item by QR Code
+  72. Get Item Details
+  73. Get Item Lifecycle
+
+  Warehouse Locations
+
+  74. List Storage Locations
+  75. Create Storage Location
+  76. Update Storage Location
+  77. Get Bin Contents
+  78. Get Warehouse Map
+  79. Put Away Item
+  80. Internal Location Transfer
+
+  Stock Ledger
+
+  81. Get Stock Balance
+  82. Get Ledger Entries
+  83. Get Balance History
+
+  Physical Stock Count
+
+  84. Create Stock Count
+  85. List Stock Counts
+  86. Get Stock Count Details
+  87. Submit Count Result
+  88. Order Recount
+  89. Approve Variance
+  90. Reject Variance
+
+  Stock Transfer Orders
+
+  91. Create Stock Transfer Order
+  92. List Stock Transfer Orders
+  93. Get Stock Transfer Order Details
+  94. Submit Stock Transfer Order
+  95. Authorise Stock Transfer Order
+  96. Reject Stock Transfer Order
+  97. Cancel Stock Transfer Order
+
+  Transfer Dispatch
+
+  98. Begin Dispatch Session
+  99. Scan Item onto Vehicle
+  100. Record Dispatch Weight
+  101. Approve Short Shipment
+  102. Complete Dispatch
+  103. Get Dispatch Details
+
+  Transfer Receipt
+
+  104. Begin Receipt Session
+  105. Scan Item during Unloading
+  106. Report Damage
+  107. Complete Receipt
+  108. Get Receipt Details
+  109. Get Shortage Report
+
+  Consumption Recording
+
+  110. Create Consumption Entry
+  111. Scan Bag into Consumption
+  112. Submit Consumption
+  113. Acknowledge Anomaly
+  114. List Consumption Records
+  115. Get Consumption Details
+
+  Dosage Configuration and Analytics
+
+  116. List Dosage Configurations
+  117. Get Dosage Configuration by Store
+  118. Create Dosage Configuration
+  119. Update Dosage Configuration
+  120. Get Consumption Analytics
+  121. Get Consumption Trends
+  122. Get Operator Patterns
+
+  Write-Offs and Loss Management
+
+  123. Raise Write-Off Request
+  124. List Write-Off Requests
+  125. Get Write-Off Details
+  126. Approve Write-Off
+  127. Reject Write-Off
+  128. Get Loss Summary
+  129. Create Return Order
+  130. Ship Return Order
+  131. Confirm Supplier Credit
+
+  Alerts
+
+  132. List Alerts
+  133. Acknowledge Alert
+  134. List Alert Rules
+  135. Create Alert Rule
+  136. Update Alert Rule
+
+  Reports
+
+  137. Stock Summary Report
+  138. Lot Lifecycle Report
+  139. Item History Report
+  140. Consumption Analytics Report
+  141. Transfer Reconciliation Report
+  142. Supplier Performance Report
+  143. Loss Summary Report
+
+  Audit Trail
+
+  144. Query Audit Events
+  145. Verify All Hash Chains
+  146. Verify Store Hash Chain
+  147. Export Audit Events
+
+  Offline Sync
+
+  148. Sync Health Check
+  149. Push Offline Operations
+  150. Pull Delta Updates
+  151. Get Sync Status
+  152. Resolve Sync Conflict
+  153. Force Full Re-Sync

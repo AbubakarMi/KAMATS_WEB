@@ -18,7 +18,8 @@
       "Bash(npm ls:*)",
       "Bash(find C:\\\\Users\\\\X1 Carbon\\\\desktop\\\\projects\\\\KAMATS_WEB\\\\components:*)",
       "Bash(find C:\\\\Users\\\\X1 Carbon\\\\desktop\\\\projects\\\\KAMATS_WEB\\\\app\\\\\\(authenticated\\):*)",
-      "Bash(du:*)"
+      "Bash(du:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

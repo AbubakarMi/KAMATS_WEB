@@ -1,0 +1,384 @@
+KAMATS_WEB — Task Tracker for Jira
+====================================
+Generated: 2026-03-23
+Source: Analysis of codebase vs KAMATS_Unified_Specification_v3.0 + KAMATS_API Modules
+
+TECH STACK (Actual vs Spec):
+  Spec calls for React 18 + Ant Design + Axios.
+  Actual build uses Next.js 16 + Tailwind CSS + Shadcn/UI + RTK Query.
+  This is a deliberate upgrade — no action needed.
+
+================================================================================
+SECTION A — COMPLETED (What Has Been Built)
+================================================================================
+
+A1. PROJECT FOUNDATION
+  - [DONE] Next.js 16 project with Turbopack, TypeScript strict mode
+  - [DONE] Tailwind CSS 4 + Shadcn/UI component library (24 UI primitives)
+  - [DONE] Redux Toolkit store with RTK Query base API (token refresh interceptor)
+  - [DONE] Zod validation schemas for all major forms (10 schema files)
+  - [DONE] 7 utility modules (formatters, case transform, permissions, sanitize, status colors, form errors)
+  - [DONE] 8 custom hooks (useAuth, usePagination, useCanPerformAction, useSignalR, useBreakpoint, useMobile, useDrawerMenu)
+  - [DONE] MSW mock layer — 23 handler files + 22 data files covering every API module
+  - [DONE] 18 TypeScript type definition files covering all domain entities and enums
+  - [DONE] Reusable components: DataTable, StatusBadge, DocumentLink, DescriptionList, TimelineView, GaugeChart, KpiCard, ApprovalActions, FormWizard, PhotoUploader, ExportButtons, PermissionGuard, ErrorBoundary, QueryErrorAlert, ConfirmDialog, LiveIndicator, 3 skeleton loaders
+  - [DONE] App layout with responsive sidebar navigation, header, theme support (next-themes installed)
+
+A2. AUTHENTICATION (Spec: M-Auth, API #1-6)
+  - [DONE] Login page with credential form and Zod validation
+  - [DONE] Auth API slice: login, refreshToken, logout mutations
+  - [DONE] Auth Redux slice with token/session management
+  - [DONE] Protected route layout (authenticated group)
+  - [DONE] Role-based permission guard component
+
+A3. USER MANAGEMENT (Spec: API #7-13)
+  - [DONE] User list page with pagination, deactivate/unlock actions
+  - [DONE] Create user page with form + store assignment
+  - [DONE] Edit user page
+  - [DONE] Admin API slice: all CRUD + deactivate, unlock, assignStore, removeStoreAssignment
+
+A4. STORE MANAGEMENT (Spec: API #14-16)
+  - [DONE] Store list page
+  - [DONE] Create store page with form
+  - [DONE] Admin API slice: createStore, updateStore
+
+A5. SYSTEM CONFIGURATION (Spec: API #17-18)
+  - [DONE] Configuration list page (key-value table)
+  - [DONE] Edit configuration page
+  - [DONE] Admin API slice: getConfiguration, updateConfig
+
+A6. DEVICE MANAGEMENT (Spec: API #19-21)
+  - [DONE] Device list page
+  - [DONE] Register device page
+  - [DONE] Admin API slice: registerDevice, deregisterDevice, getDevices
+
+A7. MODULE 1 — SUPPLIER MANAGEMENT (Spec: API #22-30)
+  - [DONE] Supplier list page with status filtering
+  - [DONE] Create supplier page with registration form
+  - [DONE] Supplier detail page with delivery scorecard
+  - [DONE] Suppliers API slice: all CRUD + approve, reject, suspend, deactivate, reactivate, scorecard
+
+A8. MODULE 2 — PURCHASE REQUISITIONS (Spec: API #31-36)
+  - [DONE] PR list page with filters
+  - [DONE] Create PR page with form
+  - [DONE] PR detail page with submit/approve/reject workflow + "Convert to PO" action
+  - [DONE] PR API slice: all CRUD + submit, approve, reject
+
+A9. MODULE 3 — PURCHASE ORDERS (Spec: API #37-47)
+  - [DONE] PO list page with status/supplier filtering
+  - [DONE] PO detail page with two-stage approval workflow (Manager + Finance)
+  - [DONE] PO detail shows amendment history
+  - [DONE] PO API slice: all CRUD + submit, approveManager, rejectManager, approveFinance, rejectFinance, createAmendment, approveAmendmentManager, approveAmendmentFinance
+
+A10. MODULE 4 — PRE-WEIGHBRIDGE QUALITY (Spec: API #48-54)
+  - [DONE] DVR list page with status filtering
+  - [DONE] DVR detail page with PO linking
+  - [DONE] Quality inspection detail page (result, criteria, photos)
+  - [DONE] Quality API slice: getDVRs, getDVR, getInspection, createDVR, linkPO, createInspection, submitInspectionResult
+
+A11. MODULE 5 — WEIGHBRIDGE (Spec: API #55-61)
+  - [DONE] Weighbridge ticket list page
+  - [DONE] Weighbridge ticket detail page (gross/tare/net weights, variance, manual flags)
+  - [DONE] Weighbridge API slice: all CRUD + recordGrossWeight, recordTareWeight, override, reject
+
+A12. MODULE 6 — GRN & PHYSICAL CHECK (Spec: API #62-66)
+  - [DONE] GRN list page with status filtering
+  - [DONE] GRN detail page (bag counts, damage, photos, cross-reference warnings)
+  - [DONE] GRN API slice: all CRUD + recordCount, submitGRN
+
+A13. MODULE 7 — LOT & ITEM REGISTRATION (Spec: API #67-73)
+  - [DONE] Lot list page with status filtering
+  - [DONE] Lot detail page
+  - [DONE] Item detail page with QR code display, remaining weight gauge, full lifecycle timeline
+  - [DONE] Lots API slice: getLots, getLot, generateLabels
+  - [DONE] Items API slice: getItem, getItemLifecycle, scanLabel, putAway
+
+A14. MODULE 8 — WAREHOUSE LOCATION MANAGEMENT (Spec: API #74-80)
+  - [DONE] Interactive warehouse map page per store (zone-based grid, utilization gauges, bin contents drawer)
+  - [DONE] Warehouse API slice: getLocations, getLocation, getLocationContents, getWarehouseMap, createInternalTransfer
+
+A15. MODULE 9 — STOCK LEDGER (Spec: API #81-83)
+  - [DONE] Ledger page per store with entry type filtering and lot balance breakdown
+  - [DONE] Ledger API slice: getStockBalance, getLedgerEntries, getBalanceHistory
+
+A16. MODULE 10 — PHYSICAL STOCK COUNT (Spec: API #84-90)
+  - [DONE] Stock count list page with status filtering
+  - [DONE] Create stock count page
+  - [DONE] Stock count detail page with variance display
+  - [DONE] StockCount API slice: all CRUD + submitCountResult, orderRecount, approveVariance, rejectVariance
+
+A17. MODULE 11 — STOCK TRANSFER ORDERS (Spec: API #91-97)
+  - [DONE] STO list page with status filtering
+  - [DONE] Create STO page
+  - [DONE] STO detail page with item list and approval actions
+  - [DONE] STO API slice: all CRUD + submit, authorise, reject, cancel
+
+A18. MODULE 12 — TRANSFER DISPATCH (Spec: API #98-103)
+  - [DONE] Dispatch detail page (scanned items, weight variance, scan progress bar)
+  - [DONE] Dispatch API slice: createDispatch, scanDispatchItem, recordDispatchWeight, approveShortShipment, completeDispatch, getDispatch
+
+A19. MODULE 13 — TRANSFER RECEIPT (Spec: API #104-109)
+  - [DONE] Receipt detail page (received items with condition, missing items, shortage report)
+  - [DONE] Receipt API slice: createReceipt, scanReceiptItem, reportDamage, completeReceipt, getReceipt, getShortageReport
+
+A20. MODULE 14 — CONSUMPTION RECORDING (Spec: API #110-115)
+  - [DONE] Consumption list page with anomaly level filtering
+  - [DONE] Consumption detail page
+  - [DONE] Consumption API slice: getConsumptionEntries, getConsumptionEntry, submitConsumption, acknowledgeAnomaly
+
+A21. MODULE 15 — DOSAGE CONFIGURATION & ANALYTICS (Spec: API #116-122)
+  - [DONE] Dosage configuration list page
+  - [DONE] Create dosage configuration page
+  - [DONE] Edit dosage configuration page
+  - [DONE] Dosage analytics page per store (operator patterns)
+  - [DONE] Dosage API slice: getDosageConfigs, getDosageByStore, getConsumptionAnalytics, getConsumptionTrends, getOperatorPatterns, createDosageConfig, updateDosageConfig
+
+A22. MODULE 16 — WRITE-OFFS & LOSS MANAGEMENT (Spec: API #123-131)
+  - [DONE] Write-off list page with status/category filtering
+  - [DONE] Create write-off page
+  - [DONE] Write-off detail page
+  - [DONE] Write-off summary report page (loss breakdown by category and store)
+  - [DONE] Loss API slice: all CRUD + approve, reject, createReturnOrder, shipReturnOrder, confirmCredit, getLossSummary
+
+A23. ALERTS (Spec: API #132-136)
+  - [DONE] Alert list page with status/severity filtering and acknowledge action
+  - [DONE] Alert rules management page with create/update
+  - [DONE] Alerts API slice: getAlerts, getAlertRules, acknowledgeAlert, createAlertRule, updateAlertRule
+
+A24. REPORTS (Spec: 7 report APIs)
+  - [DONE] Reports hub page with 5 report cards
+  - [DONE] Dynamic report page supporting: stock-summary, consumption-analytics, transfer-reconciliation, supplier-performance, loss-summary
+  - [DONE] Reports API slice: getStockSummary, getConsumptionAnalyticsReport, getTransferReconciliation, getSupplierPerformance, getLossSummaryReport
+  - [DONE] Export buttons component (CSV/Excel)
+
+A25. AUDIT TRAIL (Spec: API #144-147)
+  - [DONE] Audit trail page with event querying and hash chain verification (all stores + per-store)
+  - [DONE] Audit API slice: getAuditEvents, verifyChain, verifyChainStore
+
+A26. DASHBOARD
+  - [DONE] Main dashboard with KPI cards (stock metrics)
+  - [DONE] Area charts and bar charts for stock/consumption visualization
+  - [DONE] Recent alerts display with severity badges
+  - [DONE] Transfer shortage tracking
+  - [DONE] Time-based greeting
+
+A27. REAL-TIME (SignalR)
+  - [DONE] useSignalR custom hook for connection management
+  - [DONE] LiveIndicator component for connection status
+
+================================================================================
+SECTION B — REMAINING WORK (Jira Tickets to Create)
+================================================================================
+
+--- PRIORITY: HIGH (Core functionality gaps) ---
+
+B1. [WEB] Implement PO Create form page
+    Module: M3 — Purchase Orders
+    Current state: Page exists but is a placeholder/stub with instructions to use
+    "Convert to PO" from an approved PR instead.
+    Required: Full create form — select approved PR, select active supplier, enter
+    unit price, expected delivery date, PO line items. Submit for approval.
+    Affected file: app/(authenticated)/purchase-orders/create/page.tsx
+    API endpoint: POST /api/v1/purchase-orders (already wired in poApi.ts)
+
+B2. [WEB] Add missing report pages: Lot Lifecycle and Item History
+    Module: Reports (Cross-cutting)
+    Current state: Reports hub has 5 of 7 spec reports. Missing:
+      - Lot Lifecycle Report (full traceability: GRN → labelling → put-away → transfers → consumption)
+      - Item History / Chain-of-Custody Report (single bag full history by QR lookup)
+    These are critical for auditors.
+    API endpoints: GET /api/v1/reports/lot-lifecycle/{lotId}, GET /api/v1/reports/item-history/{itemId}
+    Also need: RTK Query endpoints in reportsApi.ts
+
+B3. [WEB] Add Audit Event Export functionality
+    Module: Audit Trail (Cross-cutting)
+    Current state: Audit page supports querying and hash chain verification, but no
+    export action is visible.
+    Spec API: GET /api/v1/audit/export (API #147)
+    Required: Add export button to audit page (CSV/Excel) and add RTK Query endpoint.
+
+B4. [WEB] Wire SignalR real-time updates into pages
+    Module: Cross-cutting — Real-time
+    Current state: useSignalR hook and LiveIndicator component exist but are not
+    connected to any page data. Spec defines 4 hubs:
+      - /hubs/stock-dashboard (live stock balance updates)
+      - /hubs/alerts (real-time anomaly and variance alerts)
+      - /hubs/transfers (live transfer status/InTransit notifications)
+      - /hubs/weighbridge (live weighbridge session updates)
+    Required: Integrate useSignalR into Dashboard, Alerts, Transfers, and Weighbridge
+    pages so data auto-refreshes on server push events.
+
+B5. [WEB] Add missing dashboard KPIs to match Executive Dashboard spec
+    Module: Dashboard (Cross-cutting)
+    Current state: Shows stock metrics, charts, recent alerts, transfer shortages.
+    Missing from spec:
+      - Pending Approvals widget (PRs, POs, STOs awaiting the logged-in user's action)
+      - In-Transit Summary (bags currently in transit + overdue count)
+      - Consumption This Month (total kg + comparison to last month)
+      - Anomaly Rate (% of consumption entries flagged this month)
+      - Loss Rate (MTD write-offs as % of received stock)
+      - Supplier Performance average scorecard
+    Required: Add these KPI widgets. May need new or extended API endpoints.
+
+--- PRIORITY: MEDIUM (Missing secondary pages and features) ---
+
+B6. [WEB] Add missing reports: Stock Movement Summary, Anomaly History,
+    Physical Count Results, Procurement Pipeline
+    Module: Reports (Cross-cutting)
+    Current state: Spec defines 12 standard reports, 5 are built. Beyond B2 above,
+    these 4 are also missing:
+      - Stock Movement Summary (all receipts, issues, transfers by period)
+      - Anomaly History (all consumption anomaly flags and resolutions)
+      - Physical Count Results (count vs ledger variance history)
+      - Procurement Pipeline (open PRs, pending POs, expected deliveries)
+    Required: Add report cards to hub, create API endpoints in reportsApi.ts, implement
+    report pages.
+
+B7. [WEB] Implement store edit page
+    Module: Admin — Store Management
+    Current state: Store list exists with create page, but no edit page for updating
+    existing stores (name, address, tier, parent store, ROP configs).
+    API endpoint: PATCH /api/v1/stores/{id} (updateStore exists in adminApi.ts)
+    Required: Create app/(authenticated)/admin/stores/edit/[id]/page.tsx
+
+B8. [WEB] Add biometric enrollment and PIN management UI
+    Module: Authentication (API #4-6)
+    Current state: Auth API types include biometric/PIN but no UI pages exist.
+    Spec APIs: POST /api/v1/auth/biometric-enroll, POST /api/v1/auth/biometric-verify,
+    POST /api/v1/auth/pin-verify
+    Note: Biometric enrollment is primarily mobile (fingerprint). The web dashboard may
+    only need PIN setup/change. Clarify scope before implementing.
+    Required at minimum: PIN setup/change form accessible from user profile.
+
+B9. [WEB] Add notification preferences / notification center page
+    Module: Cross-cutting — Alerts
+    Spec defines notification channels (in-app, SMS, email) per alert rule.
+    Current state: Alert rules page allows creating rules but there is no user-facing
+    notification preferences page (e.g., "Send me SMS for critical alerts").
+    Required: Notification preferences page or section within user profile.
+
+B10. [WEB] Add user profile / change password page
+     Module: Authentication
+     Current state: No profile page exists. Users cannot view their own profile or
+     change their password from the web UI.
+     Required: Self-service profile page with password change form.
+
+B11. [WEB] Implement Consumption Create Entry page (web companion to mobile)
+     Module: M14 — Consumption Recording (API #110-113)
+     Current state: Consumption list and detail pages exist. No create page on web.
+     The spec envisions consumption entry primarily on mobile (QR scanning), but a web
+     form could support manual entry for supervisors or back-office corrections.
+     Required: Decide if web create page is needed. If yes, create form with volume
+     input, bag selection (manual item ID entry since no QR scanner on web), and submit.
+
+B12. [WEB] Implement Consumption Detail page actions
+     Module: M14 — Consumption Recording
+     Current state: Consumption detail page exists as read-only. Missing:
+       - Acknowledge Anomaly button for supervisors (when status is PendingAcknowledgment)
+     The API mutation acknowledgeAnomaly exists in consumptionApi.ts but needs UI.
+     Required: Add conditional "Acknowledge Anomaly" action with reason field.
+
+--- PRIORITY: LOW (Polish, mobile-primary features, nice-to-haves) ---
+
+B13. [WEB] Add web-based create forms for mobile-primary workflows
+     These workflows are spec'd as mobile-first (QR scanning, weighbridge integration)
+     but having web create forms aids back-office use:
+       - DVR Create form (driver registration at gate)
+       - Quality Inspection Create form (inspection criteria entry)
+       - Weighbridge Ticket Create form (link to DVR + PO)
+       - GRN Create form (link to WT ticket, record bag count)
+     Current state: All list + detail pages exist. API slices have create mutations.
+     No web create forms exist for these 4 workflows.
+     Decision needed: Are these needed for web, or mobile-only?
+
+B14. [WEB] Add Dispatch session initiation page (web)
+     Module: M12 — Transfer Dispatch
+     Current state: Dispatch detail page exists as read-only. No web page to begin a
+     dispatch session, scan items, or complete dispatch.
+     Spec envisions this as mobile-first (scan bags with phone). Web companion optional.
+
+B15. [WEB] Add Receipt session initiation page (web)
+     Module: M13 — Transfer Receipt
+     Current state: Receipt detail page exists as read-only. No web page to begin a
+     receipt session, scan items, report damage, or complete receipt.
+     Spec envisions this as mobile-first. Web companion optional.
+
+B16. [WEB] Implement full-text search / global search
+     Module: Cross-cutting
+     Current state: No global search bar in the header. Users must navigate to specific
+     list pages to find entities.
+     Required: Consider a global search bar to look up POs, STOs, lots, items by
+     document number or QR code.
+
+B17. [WEB] Add data visualization to dosage analytics page
+     Module: M15 — Dosage Validation & Analytics
+     Current state: Analytics page shows operator patterns. Spec also calls for:
+       - 30-day rolling consumption rate chart
+       - Lot consumption velocity
+       - Time-of-day distribution
+       - Delivery vs consumption correlation
+     Required: Add additional chart widgets to analytics page.
+
+B18. [WEB] Add print / PDF generation for key documents
+     Module: Cross-cutting
+     Current state: jsPDF and jspdf-autotable are installed as dependencies but no
+     print functionality is visible on any page.
+     Required: Add "Print" or "Download PDF" button to:
+       - PO detail (for issuing to suppliers)
+       - Weighbridge ticket detail (official ticket copy)
+       - GRN detail (goods receipt document)
+       - STO detail (transfer authorization)
+       - TDN / Dispatch detail (dispatch note)
+       - Write-off detail (write-off record)
+       - Reports (all report pages)
+
+B19. [WEB] Implement dark mode toggle
+     Module: UI/UX
+     Current state: next-themes package is installed. Theme support may be partially
+     wired but no visible toggle button in the UI.
+     Required: Add theme toggle to header or sidebar.
+
+B20. [WEB] Write unit and integration tests
+     Module: Quality Assurance
+     Current state: vitest + @testing-library/react are installed as devDependencies.
+     Zero test files exist in the project.
+     Required: Write tests for:
+       - Utility functions (formatters, permissions, sanitize)
+       - Custom hooks (useAuth, usePagination, useCanPerformAction)
+       - Key components (DataTable, PermissionGuard, ApprovalActions)
+       - Critical page workflows (login, PR approval, PO approval)
+
+--- PRIORITY: OUT OF SCOPE FOR WEB (Mobile / Backend only) ---
+
+These items from the spec are NOT web dashboard concerns:
+
+  - Offline Sync Protocol (API #148-153) — Mobile-only (Flutter + local SQLite)
+  - QR label printing & scanning — Mobile/hardware (thermal printer + camera)
+  - Weighbridge scale auto-capture — Mobile/hardware (USB serial)
+  - Biometric verification (fingerprint) — Mobile-only (device biometrics)
+  - Bag-level scan operations (put-away, dispatch scan, receipt scan) — Mobile-first
+  - SMS/email notification delivery — Backend (Africa's Talking integration)
+  - Audit hash chain enforcement — Backend (PostgreSQL triggers)
+  - Ledger concurrency (SELECT FOR UPDATE, SERIALIZABLE) — Backend (EF Core)
+  - Auto-PR generation on ROP breach — Backend (Hangfire scheduled job)
+  - Auto-STO generation on ROP breach — Backend (Hangfire scheduled job)
+
+================================================================================
+SECTION C — SUMMARY COUNTS
+================================================================================
+
+Total spec'd API endpoints:              153
+Total RTK Query endpoints built:         ~120 (across 22 API slices)
+Total pages built:                       57
+Total components built:                  48
+Total mock handler/data files:           46
+
+Modules with COMPLETE web coverage:      M1, M2, M4, M5, M6, M7, M8, M9, M10, M11, M15, M16
+Modules with PARTIAL web coverage:       M3 (PO create stub), M12 (detail only), M13 (detail only), M14 (no create, no anomaly ack)
+Cross-cutting COMPLETE:                  Auth, Admin, Alerts, Audit (query + verify)
+Cross-cutting PARTIAL:                   Reports (5/12), Dashboard (missing KPIs), Real-time (hook only), Audit export
+
+High priority tickets:                   5  (B1-B5)
+Medium priority tickets:                 7  (B6-B12)
+Low priority tickets:                    8  (B13-B20)
+Total remaining tickets:                 20
