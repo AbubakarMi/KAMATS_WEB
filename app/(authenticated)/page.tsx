@@ -12,6 +12,7 @@ import {
 import { KpiCard } from '@/components/charts/KpiCard';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
+import { LiveIndicator } from '@/components/realtime/LiveIndicator';
 import { Badge } from '@/components/ui/badge';
 import {
   useGetStockSummaryQuery,
@@ -21,7 +22,7 @@ import {
 import { useGetAlertsQuery } from '@/lib/features/alerts/alertsApi';
 import { formatNumber, formatWeight, formatDateTime } from '@/lib/utils/formatters';
 import { alertSeverityColors } from '@/lib/utils/statusColors';
-import { useAuth } from '@/lib/hooks';
+import { useAuth, useStockDashboardHub, useAlertsHub } from '@/lib/hooks';
 
 const severityHex: Record<string, string> = {
   Info: '#6366F1',
@@ -49,6 +50,8 @@ const chartTooltipStyle = {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { connected: stockLive } = useStockDashboardHub();
+  const { connected: alertsLive } = useAlertsHub();
   const { data: stock, isLoading: stockLoading, isError: stockError, error: stockErr, refetch: refetchStock } = useGetStockSummaryQuery();
   const { data: loss, isLoading: lossLoading, isError: lossError, error: lossErr, refetch: refetchLoss } = useGetLossSummaryReportQuery();
   const { data: alertsData, isLoading: alertsLoading, isError: alertsError, error: alertsErr, refetch: refetchAlerts } = useGetAlertsQuery({ page: 1, pageSize: 5, status: 'Open' });
@@ -72,9 +75,12 @@ export default function Dashboard() {
     <div>
       {/* Welcome */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-stone-900 tracking-tight mb-1">
-          {greeting}, {user?.firstName ?? 'there'}
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-stone-900 tracking-tight mb-1">
+            {greeting}, {user?.firstName ?? 'there'}
+          </h2>
+          <LiveIndicator connected={stockLive || alertsLive} />
+        </div>
         <p className="text-stone-400 text-sm">
           Here&apos;s what&apos;s happening across your facilities today.
         </p>

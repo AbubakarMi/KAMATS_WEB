@@ -14,7 +14,8 @@ import { DataTable } from '@/components/tables/DataTable';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
 import { DocumentLink } from '@/components/data-display/DocumentLink';
-import { usePagination } from '@/lib/hooks';
+import { LiveIndicator } from '@/components/realtime/LiveIndicator';
+import { usePagination, useTransfersHub } from '@/lib/hooks';
 import { useGetSTOsQuery } from '@/lib/features/transfers/stoApi';
 import { formatNumber, formatDate } from '@/lib/utils/formatters';
 import { STOStatus } from '@/lib/api/types/enums';
@@ -68,6 +69,7 @@ const columns: ColumnDef<STO, unknown>[] = [
 ];
 
 export default function STOListPage() {
+  const { connected } = useTransfersHub();
   const { params, setPage, setPageSize, setSort } = usePagination();
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -79,9 +81,12 @@ export default function STOListPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
-          Stock Transfer Orders
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
+            Stock Transfer Orders
+          </h1>
+          <LiveIndicator connected={connected} />
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
