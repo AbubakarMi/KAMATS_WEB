@@ -1,9 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 import {
@@ -12,8 +17,16 @@ import {
   useGetTransferReconciliationQuery,
   useGetSupplierPerformanceQuery,
   useGetLossSummaryReportQuery,
+  useGetLotLifecycleReportQuery,
+  useGetItemHistoryReportQuery,
+  useGetStockMovementSummaryQuery,
+  useGetAnomalyHistoryQuery,
+  useGetPhysicalCountResultsQuery,
+  useGetProcurementPipelineQuery,
 } from '@/lib/features/reports/reportsApi';
-import { formatWeight, formatNumber } from '@/lib/utils/formatters';
+import { useGetLotsQuery } from '@/lib/features/inventory/lotsApi';
+import { useGetLotQuery } from '@/lib/features/inventory/lotsApi';
+import { formatWeight, formatNumber, formatDate, formatDateTime } from '@/lib/utils/formatters';
 import type { StoreStockSummary } from '@/lib/api/types/reports';
 
 function StockSummaryView() {
@@ -215,12 +228,454 @@ function LossSummaryView() {
   );
 }
 
+const eventTypeLabels: Record<string, string> = {
+  GRN_RECEIVED: 'GRN Received',
+  LABELS_GENERATED: 'Labels Generated',
+  LABEL_GENERATED: 'Label Generated',
+  PUT_AWAY: 'Put Away',
+  TRANSFER_DISPATCH: 'Transfer Dispatched',
+  TRANSFER_RECEIPT: 'Transfer Received',
+  CONSUMPTION: 'Consumption',
+  WRITE_OFF: 'Write-Off',
+  QUARANTINE: 'Quarantined',
+  RETURN: 'Returned',
+};
+
+const eventTypeColors: Record<string, string> = {
+  GRN_RECEIVED: 'bg-blue-100 text-blue-700',
+  LABELS_GENERATED: 'bg-indigo-100 text-indigo-700',
+  LABEL_GENERATED: 'bg-indigo-100 text-indigo-700',
+  PUT_AWAY: 'bg-slate-100 text-slate-700',
+  TRANSFER_DISPATCH: 'bg-amber-100 text-amber-700',
+  TRANSFER_RECEIPT: 'bg-emerald-100 text-emerald-700',
+  CONSUMPTION: 'bg-violet-100 text-violet-700',
+  WRITE_OFF: 'bg-red-100 text-red-700',
+  QUARANTINE: 'bg-orange-100 text-orange-700',
+  RETURN: 'bg-cyan-100 text-cyan-700',
+};
+
+function LotLifecycleView() {
+  const [selectedLotId, setSelectedLotId] = useState('');
+  const { data: lotsData } = useGetLotsQuery({ page: 1, pageSize: 200 });
+  const { data, isLoading, isError } = useGetLotLifecycleReportQuery(selectedLotId, { skip: !selectedLotId });
+  const lots = lotsData?.data ?? [];
+
+  return (
+    <div className="space-y-4">
+      <div className="max-w-sm">
+        <Label>Select Lot</Label>
+        <Select value={selectedLotId} onValueChange={setSelectedLotId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Choose a lot..." />
+          </SelectTrigger>
+          <SelectContent>
+            {lots.map((lot) => (
+              <SelectItem key={lot.id} value={lot.id}>
+                {lot.lotNumber} — {lot.supplierName} ({formatNumber(lot.totalBags)} bags)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {!selectedLotId && (
+        <div className="flex items-center gap-2 text-sm text-slate-500 py-8 justify-center">
+          <Search className="h-4 w-4" />
+          <span>Select a lot to view its lifecycle report</span>
+        </div>
+      )}
+
+      {selectedLotId && isLoading && <DetailPageSkeleton descriptionRows={6} />}
+
+      {selectedLotId && isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-sm text-red-700">Failed to load lot lifecycle report.</p>
+        </div>
+      )}
+
+      {data && (
+        <>
+          {/* Lot header */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            <div><span className="text-slate-500">Lot Number:</span> <span className="font-medium">{data.lotNumber}</span></div>
+            <div><span className="text-slate-500">PO:</span> <span className="font-medium">{data.poNumber}</span></div>
+            <div><span className="text-slate-500">Supplier:</span> <span className="font-medium">{data.supplierName}</span></div>
+            <div><span className="text-slate-500">GRN:</span> <span className="font-medium">{data.grnNumber}</span></div>
+            <div><span className="text-slate-500">Receipt Date:</span> <span className="font-medium">{formatDate(data.receiptDate)}</span></div>
+            <div><span className="text-slate-500">Total Bags:</span> <span className="font-medium">{formatNumber(data.totalBags)}</span></div>
+          </div>
+
+          {/* Current distribution */}
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">Current Distribution</h3>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(data.currentDistribution).map(([store, bags]) => (
+                <span key={store} className="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full">
+                  {store}: <span className="font-semibold">{bags}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700 mb-3">Lifecycle Events</h3>
+            <div className="relative space-y-0">
+              {data.events.map((event, i) => (
+                <div key={i} className="flex gap-3 pb-4 relative">
+                  {/* Timeline line */}
+                  {i < data.events.length - 1 && (
+                    <div className="absolute left-[7px] top-5 bottom-0 w-px bg-slate-200" />
+                  )}
+                  {/* Dot */}
+                  <div className="relative z-10 mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2 border-slate-300 bg-white" />
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${eventTypeColors[event.eventType] ?? 'bg-slate-100 text-slate-700'}`}>
+                        {eventTypeLabels[event.eventType] ?? event.eventType}
+                      </span>
+                      <span className="text-xs text-slate-400">{formatDateTime(event.timestamp)}</span>
+                    </div>
+                    <p className="text-sm text-slate-700">{event.description}</p>
+                    <p className="text-xs text-slate-500">
+                      {event.actorName} · {event.storeName} · {event.quantity} bags
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ItemHistoryView() {
+  const [selectedLotId, setSelectedLotId] = useState('');
+  const [selectedItemId, setSelectedItemId] = useState('');
+
+  const { data: lotsData } = useGetLotsQuery({ page: 1, pageSize: 200 });
+  const { data: lotDetail } = useGetLotQuery(selectedLotId, { skip: !selectedLotId });
+  const { data, isLoading, isError } = useGetItemHistoryReportQuery(selectedItemId, { skip: !selectedItemId });
+
+  const lots = lotsData?.data ?? [];
+  const items = lotDetail?.items ?? [];
+
+  const handleLotChange = (lotId: string) => {
+    setSelectedLotId(lotId);
+    setSelectedItemId('');
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <div>
+          <Label>Select Lot</Label>
+          <Select value={selectedLotId} onValueChange={handleLotChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a lot..." />
+            </SelectTrigger>
+            <SelectContent>
+              {lots.map((lot) => (
+                <SelectItem key={lot.id} value={lot.id}>
+                  {lot.lotNumber} — {lot.supplierName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Select Item</Label>
+          <Select value={selectedItemId} onValueChange={setSelectedItemId} disabled={!selectedLotId}>
+            <SelectTrigger>
+              <SelectValue placeholder={selectedLotId ? 'Choose an item...' : 'Select a lot first'} />
+            </SelectTrigger>
+            <SelectContent>
+              {items.map((item) => (
+                <SelectItem key={item.id} value={item.id}>
+                  {item.itemCode} — <StatusBadge status={item.status} />
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {!selectedItemId && (
+        <div className="flex items-center gap-2 text-sm text-slate-500 py-8 justify-center">
+          <Search className="h-4 w-4" />
+          <span>Select a lot and item to view its chain of custody</span>
+        </div>
+      )}
+
+      {selectedItemId && isLoading && <DetailPageSkeleton descriptionRows={6} />}
+
+      {selectedItemId && isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-sm text-red-700">Failed to load item history report.</p>
+        </div>
+      )}
+
+      {data && (
+        <>
+          {/* Item header */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            <div><span className="text-slate-500">Item Code:</span> <span className="font-medium">{data.itemCode}</span></div>
+            <div><span className="text-slate-500">Lot:</span> <span className="font-medium">{data.lotNumber}</span></div>
+            <div><span className="text-slate-500">PO:</span> <span className="font-medium">{data.poNumber}</span></div>
+            <div><span className="text-slate-500">Supplier:</span> <span className="font-medium">{data.supplierName}</span></div>
+            <div><span className="text-slate-500">Status:</span> <StatusBadge status={data.currentStatus} /></div>
+            <div><span className="text-slate-500">Current Store:</span> <span className="font-medium">{data.currentStoreName}</span></div>
+            {data.currentLocationCode && (
+              <div><span className="text-slate-500">Location:</span> <span className="font-medium">{data.currentLocationCode}</span></div>
+            )}
+          </div>
+
+          {/* Chain of custody timeline */}
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700 mb-3">Chain of Custody</h3>
+            <div className="relative space-y-0">
+              {data.chainOfCustody.map((event, i) => (
+                <div key={i} className="flex gap-3 pb-4 relative">
+                  {i < data.chainOfCustody.length - 1 && (
+                    <div className="absolute left-[7px] top-5 bottom-0 w-px bg-slate-200" />
+                  )}
+                  <div className="relative z-10 mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2 border-slate-300 bg-white" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${eventTypeColors[event.eventType] ?? 'bg-slate-100 text-slate-700'}`}>
+                        {eventTypeLabels[event.eventType] ?? event.eventType}
+                      </span>
+                      <span className="text-xs text-slate-400">{formatDateTime(event.timestamp)}</span>
+                    </div>
+                    <p className="text-sm text-slate-700">{event.details}</p>
+                    <p className="text-xs text-slate-500">
+                      {event.actorName} · {event.storeName}
+                      {event.locationCode && ` · ${event.locationCode}`}
+                      {event.referenceNumber && ` · ${event.referenceNumber}`}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function StockMovementSummaryView() {
+  const { data, isLoading } = useGetStockMovementSummaryQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Received: {formatNumber(data.totalReceived)} bags</span>
+        <span>Issued: {formatNumber(data.totalIssued)} bags</span>
+        <span>Transferred: {formatNumber(data.totalTransferred)} bags</span>
+      </div>
+      <p className="text-sm text-slate-500 mb-3">{data.period.from} to {data.period.to}</p>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Date</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Type</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Reference</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Bags</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Weight</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Direction</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.movements.map((m, i) => (
+            <tr key={i} className="border-b border-slate-50">
+              <td className="py-2">{formatDate(m.date)}</td>
+              <td className="py-2">{m.movementType}</td>
+              <td className="py-2">{m.referenceNumber}</td>
+              <td className="py-2">{m.storeName}</td>
+              <td className="text-right py-2">{m.bags}</td>
+              <td className="text-right py-2">{formatWeight(m.weightKg)}</td>
+              <td className="py-2">
+                <span className={`text-xs px-1.5 py-0.5 rounded ${m.direction === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                  {m.direction === 'in' ? 'IN' : 'OUT'}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function AnomalyHistoryView() {
+  const { data, isLoading } = useGetAnomalyHistoryQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Total Anomalies: {data.totalAnomalies}</span>
+        <span className="text-emerald-600">Resolved: {data.resolvedCount}</span>
+        <span className="text-red-600">Unresolved: {data.unresolvedCount}</span>
+      </div>
+      <p className="text-sm text-slate-500 mb-3">{data.period.from} to {data.period.to}</p>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Date</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Reference</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Volume (m³)</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Consumed</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Deviation</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Level</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.entries.map((e) => {
+            const dev = parseFloat(e.deviationPct);
+            const devColor = dev > 20 ? 'text-red-600' : dev > 10 ? 'text-amber-600' : 'text-slate-700';
+            const levelColor = e.anomalyLevel === 'Critical' ? 'bg-red-100 text-red-700' : e.anomalyLevel === 'Warning' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700';
+            return (
+              <tr key={e.id} className="border-b border-slate-50">
+                <td className="py-2">{formatDateTime(e.timestamp)}</td>
+                <td className="py-2">{e.storeName}</td>
+                <td className="py-2">{e.referenceNumber}</td>
+                <td className="text-right py-2">{e.volumeM3}</td>
+                <td className="text-right py-2">{formatWeight(e.consumedKg)}</td>
+                <td className={`text-right py-2 ${devColor}`}>{dev.toFixed(1)}%</td>
+                <td className="py-2"><span className={`text-xs px-1.5 py-0.5 rounded ${levelColor}`}>{e.anomalyLevel}</span></td>
+                <td className="py-2">
+                  {e.resolved
+                    ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Resolved</span>
+                    : <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Open</span>
+                  }
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function PhysicalCountResultsView() {
+  const { data, isLoading } = useGetPhysicalCountResultsQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Total Counts: {data.totalCounts}</span>
+        <span>Avg Variance: {parseFloat(data.avgVariancePct).toFixed(1)}%</span>
+      </div>
+      <p className="text-sm text-slate-500 mb-3">{data.period.from} to {data.period.to}</p>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Date</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Type</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Total Items</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Matched</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Variance</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Variance %</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.entries.map((e) => {
+            const vPct = parseFloat(e.variancePct);
+            const vColor = vPct > 5 ? 'text-red-600' : vPct > 2 ? 'text-amber-600' : 'text-emerald-600';
+            return (
+              <tr key={e.countId} className="border-b border-slate-50">
+                <td className="py-2">{e.storeName}</td>
+                <td className="py-2">{formatDate(e.countDate)}</td>
+                <td className="py-2">{e.countType}</td>
+                <td className="text-right py-2">{e.totalItems}</td>
+                <td className="text-right py-2">{e.matchedItems}</td>
+                <td className="text-right py-2">{e.varianceItems}</td>
+                <td className={`text-right py-2 ${vColor}`}>{vPct.toFixed(1)}%</td>
+                <td className="py-2"><StatusBadge status={e.status} /></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function ProcurementPipelineView() {
+  const { data, isLoading } = useGetProcurementPipelineQuery();
+  if (isLoading || !data) return <DetailPageSkeleton descriptionRows={6} />;
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-6 text-sm font-semibold mb-4">
+        <span>Open PRs: {data.openPRs}</span>
+        <span>Pending POs: {data.pendingPOs}</span>
+        <span>Expected Deliveries: {data.expectedDeliveries}</span>
+      </div>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <th className="text-left py-2 text-slate-500 font-medium">Type</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Reference</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Status</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Store</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Qty (bags)</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Expected</th>
+            <th className="text-right py-2 text-slate-500 font-medium">Days in Status</th>
+            <th className="text-left py-2 text-slate-500 font-medium">Assigned To</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.entries.map((e, i) => {
+            const daysColor = e.daysInStatus > 7 ? 'text-red-600' : e.daysInStatus > 3 ? 'text-amber-600' : 'text-slate-700';
+            return (
+              <tr key={i} className="border-b border-slate-50">
+                <td className="py-2">
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${e.type === 'PR' ? 'bg-blue-100 text-blue-700' : e.type === 'PO' ? 'bg-violet-100 text-violet-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {e.type}
+                  </span>
+                </td>
+                <td className="py-2">{e.referenceNumber}</td>
+                <td className="py-2"><StatusBadge status={e.status} /></td>
+                <td className="py-2">{e.storeName}</td>
+                <td className="text-right py-2">{e.quantityBags}</td>
+                <td className="py-2">{formatDate(e.expectedDate)}</td>
+                <td className={`text-right py-2 ${daysColor}`}>{e.daysInStatus}</td>
+                <td className="py-2">{e.assignedTo ?? '—'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 const reportComponents: Record<string, { title: string; component: React.FC }> = {
   'stock-summary': { title: 'Stock Balance Summary', component: StockSummaryView },
   'consumption-analytics': { title: 'Consumption Analytics', component: ConsumptionAnalyticsView },
   'transfer-reconciliation': { title: 'Transfer Reconciliation', component: TransferReconciliationView },
   'supplier-performance': { title: 'Supplier Performance', component: SupplierPerformanceView },
   'loss-summary': { title: 'Loss Summary', component: LossSummaryView },
+  'lot-lifecycle': { title: 'Lot Lifecycle', component: LotLifecycleView },
+  'item-history': { title: 'Item History', component: ItemHistoryView },
+  'stock-movement-summary': { title: 'Stock Movement Summary', component: StockMovementSummaryView },
+  'anomaly-history': { title: 'Anomaly History', component: AnomalyHistoryView },
+  'physical-count-results': { title: 'Physical Count Results', component: PhysicalCountResultsView },
+  'procurement-pipeline': { title: 'Procurement Pipeline', component: ProcurementPipelineView },
 };
 
 export default function ReportViewerPage() {

@@ -12,7 +12,8 @@ import { DataTable } from '@/components/tables/DataTable';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
 import { DocumentLink } from '@/components/data-display/DocumentLink';
-import { usePagination } from '@/lib/hooks';
+import { LiveIndicator } from '@/components/realtime/LiveIndicator';
+import { usePagination, useWeighbridgeHub } from '@/lib/hooks';
 import { useGetWeighbridgeTicketsQuery } from '@/lib/features/weighbridge/weighbridgeApi';
 import { formatWeight, formatPercentage, formatDateTime } from '@/lib/utils/formatters';
 import { WeighbridgeStatus } from '@/lib/api/types/enums';
@@ -75,6 +76,7 @@ const columns: ColumnDef<WeighbridgeTicket, unknown>[] = [
 ];
 
 export default function WeighbridgeListPage() {
+  const { connected } = useWeighbridgeHub();
   const { params, setPage, setPageSize, setSort } = usePagination();
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -86,9 +88,12 @@ export default function WeighbridgeListPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
-          Weighbridge Tickets
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
+            Weighbridge Tickets
+          </h1>
+          <LiveIndicator connected={connected} />
+        </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
           <SelectContent>

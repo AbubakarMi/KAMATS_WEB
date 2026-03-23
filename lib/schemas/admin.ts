@@ -63,6 +63,17 @@ export const createStoreSchema = z.object({
   longitude: z.coerce.number().min(-180).max(180).optional(),
 });
 
+export const updateStoreSchema = z.object({
+  name: z
+    .string()
+    .min(2, 'Store name is required')
+    .max(200, 'Store name must not exceed 200 characters'),
+  address: z.string().max(500, 'Address must not exceed 500 characters'),
+  gpsLatitude: z.string().max(20),
+  gpsLongitude: z.string().max(20),
+  isActive: z.boolean(),
+});
+
 export const registerDeviceSchema = z.object({
   deviceName: z
     .string()

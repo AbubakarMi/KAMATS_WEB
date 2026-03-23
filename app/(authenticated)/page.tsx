@@ -8,20 +8,27 @@ import {
 import {
   Database, Bell, AlertTriangle, ArrowLeftRight,
   CheckCircle, AlertCircle, Package, TrendingDown,
+  ClipboardList, Truck, Beaker, Users,
 } from 'lucide-react';
 import { KpiCard } from '@/components/charts/KpiCard';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
+import { LiveIndicator } from '@/components/realtime/LiveIndicator';
 import { Badge } from '@/components/ui/badge';
 import {
   useGetStockSummaryQuery,
   useGetLossSummaryReportQuery,
   useGetTransferReconciliationQuery,
+  useGetConsumptionAnalyticsReportQuery,
+  useGetSupplierPerformanceQuery,
 } from '@/lib/features/reports/reportsApi';
 import { useGetAlertsQuery } from '@/lib/features/alerts/alertsApi';
+import { useGetPRsQuery } from '@/lib/features/procurement/prApi';
+import { useGetPOsQuery } from '@/lib/features/procurement/poApi';
+import { useGetSTOsQuery } from '@/lib/features/transfers/stoApi';
 import { formatNumber, formatWeight, formatDateTime } from '@/lib/utils/formatters';
 import { alertSeverityColors } from '@/lib/utils/statusColors';
-import { useAuth } from '@/lib/hooks';
+import { useAuth, useStockDashboardHub, useAlertsHub } from '@/lib/hooks';
 
 const severityHex: Record<string, string> = {
   Info: '#6366F1',
@@ -49,10 +56,19 @@ const chartTooltipStyle = {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { connected: stockLive } = useStockDashboardHub();
+  const { connected: alertsLive } = useAlertsHub();
   const { data: stock, isLoading: stockLoading, isError: stockError, error: stockErr, refetch: refetchStock } = useGetStockSummaryQuery();
   const { data: loss, isLoading: lossLoading, isError: lossError, error: lossErr, refetch: refetchLoss } = useGetLossSummaryReportQuery();
   const { data: alertsData, isLoading: alertsLoading, isError: alertsError, error: alertsErr, refetch: refetchAlerts } = useGetAlertsQuery({ page: 1, pageSize: 5, status: 'Open' });
   const { data: transfers, isLoading: transfersLoading, isError: transfersError, error: transfersErr, refetch: refetchTransfers } = useGetTransferReconciliationQuery();
+
+  // New KPI queries
+  const { data: pendingPRs, isLoading: prsLoading } = useGetPRsQuery({ status: 'Submitted', page: 1, pageSize: 1 });
+  const { data: pendingPOs, isLoading: posLoading } = useGetPOsQuery({ status: 'Submitted', page: 1, pageSize: 1 });
+  const { data: inTransitSTOs, isLoading: stosLoading } = useGetSTOsQuery({ status: 'InTransit', page: 1, pageSize: 100 });
+  const { data: consumption, isLoading: consumptionLoading } = useGetConsumptionAnalyticsReportQuery();
+  const { data: supplierPerf, isLoading: supplierPerfLoading } = useGetSupplierPerformanceQuery();
 
   const allInitialLoading = stockLoading && lossLoading && alertsLoading && transfersLoading;
   if (allInitialLoading) return <DashboardSkeleton />;
@@ -60,6 +76,17 @@ export default function Dashboard() {
   const openAlerts = alertsData?.data ?? [];
   const storesBelow = stock?.stores.filter((s) => s.belowReorderPoint) ?? [];
   const totalShortage = transfers?.transfers.reduce((sum, t) => sum + t.shortageBags, 0) ?? 0;
+
+  // Derived KPI values
+  const pendingApprovals = (pendingPRs?.pagination?.totalItems ?? 0) + (pendingPOs?.pagination?.totalItems ?? 0);
+  const inTransitBags = (inTransitSTOs?.data ?? []).reduce((sum, s) => sum + (s.authorisedBags ?? s.requestedBags), 0);
+  const totalConsumedKg = (consumption?.stores ?? []).reduce((sum, s) => sum + parseFloat(s.totalConsumedKg || '0'), 0);
+  const totalAnomalies = (consumption?.stores ?? []).reduce((sum, s) => sum + s.anomalyCount, 0);
+  const supplierAvgScore = (() => {
+    const suppliers = supplierPerf?.suppliers ?? [];
+    if (suppliers.length === 0) return 0;
+    return suppliers.reduce((sum, s) => sum + parseFloat(s.avgScore), 0) / suppliers.length;
+  })();
 
   const greeting = (() => {
     const hour = new Date().getHours();
@@ -72,9 +99,12 @@ export default function Dashboard() {
     <div>
       {/* Welcome */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-stone-900 tracking-tight mb-1">
-          {greeting}, {user?.firstName ?? 'there'}
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-stone-900 tracking-tight mb-1">
+            {greeting}, {user?.firstName ?? 'there'}
+          </h2>
+          <LiveIndicator connected={stockLive || alertsLive} />
+        </div>
         <p className="text-stone-400 text-sm">
           Here&apos;s what&apos;s happening across your facilities today.
         </p>
@@ -125,6 +155,56 @@ export default function Dashboard() {
           trend={totalShortage > 0 ? 'down' : 'stable'}
           trendValue={totalShortage > 0 ? 'Investigate' : 'No shortages'}
           trendColor={totalShortage > 0 ? '#EA580C' : '#16A34A'}
+        />
+      </div>
+
+      {/* KPI Row 2 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <KpiCard
+          title="Pending Approvals"
+          value={pendingApprovals}
+          loading={prsLoading && posLoading}
+          icon={<ClipboardList size={20} className="text-violet-500" />}
+          iconColor="#8B5CF6"
+          iconBg="#F5F3FF"
+          trend={pendingApprovals > 0 ? 'up' : 'stable'}
+          trendValue={pendingApprovals > 0 ? `${pendingPRs?.pagination?.totalItems ?? 0} PRs · ${pendingPOs?.pagination?.totalItems ?? 0} POs` : 'All clear'}
+          trendColor={pendingApprovals > 0 ? '#EA580C' : '#16A34A'}
+        />
+        <KpiCard
+          title="In Transit"
+          value={inTransitBags}
+          suffix="bags"
+          loading={stosLoading}
+          icon={<Truck size={20} className="text-sky-500" />}
+          iconColor="#0EA5E9"
+          iconBg="#F0F9FF"
+          trend={inTransitBags > 0 ? 'up' : 'stable'}
+          trendValue={`${inTransitSTOs?.pagination?.totalItems ?? 0} active transfers`}
+          trendColor="#0EA5E9"
+        />
+        <KpiCard
+          title="Consumption (MTD)"
+          value={totalConsumedKg > 0 ? formatWeight(String(totalConsumedKg)) : '0 kg'}
+          loading={consumptionLoading}
+          icon={<Beaker size={20} className="text-cyan-500" />}
+          iconColor="#06B6D4"
+          iconBg="#ECFEFF"
+          trend={totalAnomalies > 0 ? 'up' : 'stable'}
+          trendValue={totalAnomalies > 0 ? `${totalAnomalies} anomalies` : 'No anomalies'}
+          trendColor={totalAnomalies > 0 ? '#EA580C' : '#16A34A'}
+        />
+        <KpiCard
+          title="Supplier Avg Score"
+          value={supplierAvgScore > 0 ? supplierAvgScore.toFixed(1) : '—'}
+          suffix={supplierAvgScore > 0 ? '%' : ''}
+          loading={supplierPerfLoading}
+          icon={<Users size={20} className="text-purple-500" />}
+          iconColor="#A855F7"
+          iconBg="#FAF5FF"
+          trend={supplierAvgScore >= 90 ? 'up' : supplierAvgScore >= 75 ? 'stable' : 'down'}
+          trendValue={supplierAvgScore >= 90 ? 'Excellent' : supplierAvgScore >= 75 ? 'Good' : 'Needs attention'}
+          trendColor={supplierAvgScore >= 90 ? '#16A34A' : supplierAvgScore >= 75 ? '#EA580C' : '#DC2626'}
         />
       </div>
 

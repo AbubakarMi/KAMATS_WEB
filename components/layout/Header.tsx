@@ -78,7 +78,10 @@ export default function AppHeader({ isMobile, onMenuClick }: HeaderProps) {
         </button>
 
         {/* User avatar + info */}
-        <div className="flex items-center gap-2.5 pl-2 ml-1 border-l border-stone-200/60">
+        <button
+          onClick={() => router.push('/profile')}
+          className="flex items-center gap-2.5 pl-2 ml-1 border-l border-stone-200/60 hover:opacity-80 transition-opacity"
+        >
           <Avatar className="h-9 w-9">
             <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-indigo-600 text-white text-xs font-bold font-[family-name:var(--font-display)]">
               {initials}
@@ -94,7 +97,7 @@ export default function AppHeader({ isMobile, onMenuClick }: HeaderProps) {
               </div>
             </div>
           )}
-        </div>
+        </button>
       </div>
     </header>
   );

@@ -7,3 +7,4 @@ export * from './stockCount';
 export * from './loss';
 export * from './alerts';
 export * from './dosage';
+export * from './consumption';

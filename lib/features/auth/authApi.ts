@@ -6,6 +6,12 @@ import type {
   RefreshRequest,
   RefreshResponse,
   LogoutRequest,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
+  PinSetupRequest,
+  PinSetupResponse,
+  PinVerifyRequest,
+  PinVerifyResponse,
 } from '@/lib/api/types/auth';
 
 export const authApi = baseApi.injectEndpoints({
@@ -33,7 +39,31 @@ export const authApi = baseApi.injectEndpoints({
         data: body,
       }),
     }),
+
+    changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
+      query: (body) => ({
+        url: endpoints.auth.changePassword,
+        method: 'POST',
+        data: body,
+      }),
+    }),
+
+    pinSetup: builder.mutation<PinSetupResponse, PinSetupRequest>({
+      query: (body) => ({
+        url: endpoints.auth.pinSetup,
+        method: 'POST',
+        data: body,
+      }),
+    }),
+
+    pinVerify: builder.mutation<PinVerifyResponse, PinVerifyRequest>({
+      query: (body) => ({
+        url: endpoints.auth.pinVerify,
+        method: 'POST',
+        data: body,
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useLogoutMutation } = authApi;
+export const { useLoginMutation, useLogoutMutation, useChangePasswordMutation, usePinSetupMutation, usePinVerifyMutation } = authApi;

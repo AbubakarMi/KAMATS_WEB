@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 
+import { Button } from '@/components/ui/button';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -121,6 +123,11 @@ export default function ConsumptionListPage() {
           Consumption Records
         </h1>
         <div className="flex flex-wrap items-center gap-2">
+          <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Link href="/consumption/create">
+              <Plus className="h-4 w-4 mr-1.5" />Record Consumption
+            </Link>
+          </Button>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[170px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>

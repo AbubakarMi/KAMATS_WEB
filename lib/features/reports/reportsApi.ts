@@ -5,6 +5,12 @@ import type {
   ConsumptionAnalyticsReport,
   TransferReconciliationReport, TransferReconciliationParams,
   SupplierPerformanceReport,
+  LotLifecycleReport,
+  ItemHistoryReport,
+  StockMovementSummaryReport,
+  AnomalyHistoryReport,
+  PhysicalCountResultsReport,
+  ProcurementPipelineReport,
 } from '@/lib/api/types/reports';
 import type { LossSummary, LossSummaryParams } from '@/lib/api/types/loss';
 
@@ -25,6 +31,24 @@ export const reportsApi = baseApi.injectEndpoints({
     getLossSummaryReport: builder.query<LossSummary, LossSummaryParams | void>({
       query: (params) => ({ url: endpoints.reports.lossSummary, params: params ?? undefined }),
     }),
+    getLotLifecycleReport: builder.query<LotLifecycleReport, string>({
+      query: (lotId) => ({ url: endpoints.reports.lotLifecycle(lotId) }),
+    }),
+    getItemHistoryReport: builder.query<ItemHistoryReport, string>({
+      query: (itemId) => ({ url: endpoints.reports.itemHistory(itemId) }),
+    }),
+    getStockMovementSummary: builder.query<StockMovementSummaryReport, void>({
+      query: () => ({ url: endpoints.reports.stockMovementSummary }),
+    }),
+    getAnomalyHistory: builder.query<AnomalyHistoryReport, void>({
+      query: () => ({ url: endpoints.reports.anomalyHistory }),
+    }),
+    getPhysicalCountResults: builder.query<PhysicalCountResultsReport, void>({
+      query: () => ({ url: endpoints.reports.physicalCountResults }),
+    }),
+    getProcurementPipeline: builder.query<ProcurementPipelineReport, void>({
+      query: () => ({ url: endpoints.reports.procurementPipeline }),
+    }),
   }),
 });
 
@@ -34,4 +58,10 @@ export const {
   useGetTransferReconciliationQuery,
   useGetSupplierPerformanceQuery,
   useGetLossSummaryReportQuery,
+  useGetLotLifecycleReportQuery,
+  useGetItemHistoryReportQuery,
+  useGetStockMovementSummaryQuery,
+  useGetAnomalyHistoryQuery,
+  useGetPhysicalCountResultsQuery,
+  useGetProcurementPipelineQuery,
 } = reportsApi;

@@ -107,7 +107,7 @@ export default function PRDetailPage() {
             <ApprovalActions onApprove={handleApprove} onReject={handleReject} />
           )}
           {pr.status === 'Approved' && !pr.linkedPoId && canConvertToPO && (
-            <Button size="sm" onClick={() => router.push('/purchase-orders')}>
+            <Button size="sm" onClick={() => router.push(`/purchase-orders/create?prId=${pr.id}`)}>
               <ArrowLeftRight className="h-4 w-4 mr-1" />Convert to PO
             </Button>
           )}

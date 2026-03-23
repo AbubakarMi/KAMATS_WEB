@@ -9,6 +9,8 @@ export const endpoints = {
     logout: '/auth/logout',
     biometricEnroll: '/auth/biometric/enroll',
     biometricVerify: '/auth/biometric/verify',
+    changePassword: '/auth/change-password',
+    pinSetup: '/auth/pin/setup',
     pinVerify: '/auth/pin/verify',
   },
 
@@ -208,7 +210,7 @@ export const endpoints = {
     rule: (id: string) => `/alert-rules/${id}`,
   },
 
-  // === Cross-Cutting: Reports (7) ===
+  // === Cross-Cutting: Reports (11) ===
   reports: {
     stockSummary: '/reports/stock-summary',
     lotLifecycle: (lotId: string) => `/reports/lot-lifecycle/${lotId}`,
@@ -217,6 +219,10 @@ export const endpoints = {
     transferReconciliation: '/reports/transfer-reconciliation',
     supplierPerformance: '/reports/supplier-performance',
     lossSummary: '/reports/loss-summary',
+    stockMovementSummary: '/reports/stock-movement-summary',
+    anomalyHistory: '/reports/anomaly-history',
+    physicalCountResults: '/reports/physical-count-results',
+    procurementPipeline: '/reports/procurement-pipeline',
   },
 
   // === Cross-Cutting: Audit (4) ===

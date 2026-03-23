@@ -55,6 +55,17 @@ export interface LogoutRequest {
   refreshToken: string;
 }
 
+// --- Change Password ---
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  updatedAt: Timestamp;
+}
+
 // --- Biometric ---
 export interface BiometricEnrollRequest {
   biometricTemplate: string;
@@ -77,6 +88,16 @@ export interface BiometricVerifyResponse {
 }
 
 // --- PIN ---
+export interface PinSetupRequest {
+  currentPin?: string;
+  newPin: string;
+}
+
+export interface PinSetupResponse {
+  success: boolean;
+  updatedAt: Timestamp;
+}
+
 export interface PinVerifyRequest {
   userId: UUID;
   pin: string;

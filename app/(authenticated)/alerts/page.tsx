@@ -17,7 +17,8 @@ import {
 import { DataTable } from '@/components/tables/DataTable';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
-import { usePagination } from '@/lib/hooks';
+import { LiveIndicator } from '@/components/realtime/LiveIndicator';
+import { usePagination, useAlertsHub } from '@/lib/hooks';
 import { useGetAlertsQuery, useAcknowledgeAlertMutation } from '@/lib/features/alerts/alertsApi';
 import { formatDateTime } from '@/lib/utils/formatters';
 import { sanitizeString } from '@/lib/utils/sanitize';
@@ -28,6 +29,7 @@ const statusOptions = Object.values(AlertStatus).map((s) => ({ value: s, label: 
 const severityOptions = Object.values(AlertSeverity).map((s) => ({ value: s, label: s }));
 
 export default function AlertsPage() {
+  const { connected } = useAlertsHub();
   const { params, setPage, setPageSize, setSort } = usePagination();
   const [statusFilter, setStatusFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
@@ -99,7 +101,10 @@ export default function AlertsPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">Alerts</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">Alerts</h1>
+          <LiveIndicator connected={connected} />
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
