@@ -124,17 +124,6 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
       items.push({ key: 'consumption-group', icon: <BarChart3 size={20} />, label: 'Consumption', children: consumptionChildren });
     }
 
-    // Top-level: Alerts, Reports, Audit Trail
-    if (hasPermission([Permissions.ALERTS_READ, Permissions.ALERTS_ACKNOWLEDGE, Permissions.ALERTS_CONFIGURE])) {
-      items.push({ key: '/alerts', icon: <Bell size={20} />, label: 'Alerts' });
-    }
-    if (hasPermission(Permissions.REPORTS_VIEW)) {
-      items.push({ key: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' });
-    }
-    if (hasPermission([Permissions.AUDIT_VIEW, Permissions.AUDIT_VERIFY])) {
-      items.push({ key: '/audit', icon: <ShieldCheck size={20} />, label: 'Audit Trail' });
-    }
-
     // Configuration (submenu: Stores, Devices, System)
     const configChildren: MenuItem[] = [];
     if (hasPermission([Permissions.USERS_MANAGE, Permissions.SYSTEM_CONFIGURE, Permissions.DEVICES_MANAGE])) {
@@ -145,6 +134,17 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
     }
     if (configChildren.length > 0) {
       items.push({ key: 'configuration', icon: <Settings size={20} />, label: 'Configuration', children: configChildren });
+    }
+
+    // Top-level: Alerts, Reports, Audit Trail
+    if (hasPermission([Permissions.ALERTS_READ, Permissions.ALERTS_ACKNOWLEDGE, Permissions.ALERTS_CONFIGURE])) {
+      items.push({ key: '/alerts', icon: <Bell size={20} />, label: 'Alerts' });
+    }
+    if (hasPermission(Permissions.REPORTS_VIEW)) {
+      items.push({ key: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' });
+    }
+    if (hasPermission([Permissions.AUDIT_VIEW, Permissions.AUDIT_VERIFY])) {
+      items.push({ key: '/audit', icon: <ShieldCheck size={20} />, label: 'Audit Trail' });
     }
 
     return items;

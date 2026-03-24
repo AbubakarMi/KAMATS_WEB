@@ -19,7 +19,7 @@ export function useSignalR(
   const connectionRef = useRef<HubConnection | null>(null);
 
   const connect = useCallback(async () => {
-    if (!enabled || !hubPath) return;
+    if (!enabled || !hubPath || !SIGNALR_BASE_URL) return;
 
     const connection = new HubConnectionBuilder()
       .withUrl(`${SIGNALR_BASE_URL}${hubPath}`, {
