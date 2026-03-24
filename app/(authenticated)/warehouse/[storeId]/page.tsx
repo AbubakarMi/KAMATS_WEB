@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
@@ -11,6 +11,7 @@ import { KpiCard } from '@/components/charts/KpiCard';
 import { GaugeChart } from '@/components/charts/GaugeChart';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 import { useGetWarehouseMapQuery, useGetLocationContentsQuery } from '@/lib/features/warehouse/warehouseApi';
+import { useAuth } from '@/lib/hooks';
 import { formatWeight, formatNumber } from '@/lib/utils/formatters';
 
 function getUtilizationColor(pct: number): string {
@@ -30,8 +31,18 @@ function getUtilizationClasses(pct: number): string {
 }
 
 export default function WarehouseMapPage() {
-  const { storeId } = useParams<{ storeId: string }>();
+  const { storeId: rawStoreId } = useParams<{ storeId: string }>();
+  const router = useRouter();
+  const { activeStoreId } = useAuth();
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  // Resolve "default" to the user's active store
+  const storeId = rawStoreId === 'default' && activeStoreId ? activeStoreId : rawStoreId;
+
+  // If still "default" (no active store yet), redirect once auth loads
+  if (storeId === 'default' && activeStoreId) {
+    router.replace(`/warehouse/${activeStoreId}`);
+  }
 
   const { data: warehouseMap, isLoading } = useGetWarehouseMapQuery(storeId);
   const { data: locationContents } = useGetLocationContentsQuery(selectedLocationId!, {

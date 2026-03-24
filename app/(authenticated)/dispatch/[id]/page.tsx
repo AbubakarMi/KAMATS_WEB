@@ -20,6 +20,8 @@ import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 import { DataTable } from '@/components/tables/DataTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { DownloadPdfButton } from '@/components/DownloadPdfButton';
+import { generateDispatchPdf } from '@/lib/utils/pdfGenerators';
 import {
   useGetDispatchQuery,
   useScanDispatchItemMutation,
@@ -195,6 +197,7 @@ export default function DispatchDetailPage() {
           Dispatch — {dispatch.stoNumber}
         </h1>
         <div className="flex flex-wrap items-center gap-2">
+          <DownloadPdfButton onGenerate={() => generateDispatchPdf(dispatch)} />
           {canApproveShort && (
             <Button size="sm" variant="outline" className="border-orange-300 text-orange-600 hover:bg-orange-50" onClick={() => setShortOpen(true)}>
               <AlertTriangle className="h-4 w-4 mr-1" />Approve Short

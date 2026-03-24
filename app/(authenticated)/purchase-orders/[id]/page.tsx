@@ -14,6 +14,8 @@ import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 import { ApprovalActions } from '@/components/forms/ApprovalActions';
 import { DataTable } from '@/components/tables/DataTable';
+import { DownloadPdfButton } from '@/components/DownloadPdfButton';
+import { generatePOPdf } from '@/lib/utils/pdfGenerators';
 import { useCanPerformAction } from '@/lib/hooks';
 import { Permissions as P } from '@/lib/utils/permissions';
 import {
@@ -138,6 +140,7 @@ export default function PODetailPage() {
           <StatusBadge status={po.status} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <DownloadPdfButton onGenerate={() => generatePOPdf(po)} />
           {po.status === 'Draft' && canSubmit && (
             <Button size="sm" onClick={handleSubmit}>
               <Send className="h-4 w-4 mr-1" />Submit

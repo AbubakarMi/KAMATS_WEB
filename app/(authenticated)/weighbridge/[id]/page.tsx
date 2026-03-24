@@ -9,6 +9,8 @@ import { DocumentLink } from '@/components/data-display/DocumentLink';
 import { DescriptionList } from '@/components/data-display/DescriptionList';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
+import { DownloadPdfButton } from '@/components/DownloadPdfButton';
+import { generateWeighbridgePdf } from '@/lib/utils/pdfGenerators';
 import { useGetWeighbridgeTicketQuery } from '@/lib/features/weighbridge/weighbridgeApi';
 import { formatWeight, formatPercentage, formatDateTime } from '@/lib/utils/formatters';
 
@@ -67,14 +69,17 @@ export default function WeighbridgeDetailPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <Button variant="outline" size="sm" onClick={() => router.push('/weighbridge')}>
-          <ArrowLeft className="h-4 w-4 mr-1" />Back
-        </Button>
-        <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
-          {ticket.ticketNumber}
-        </h1>
-        <StatusBadge status={ticket.status} />
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => router.push('/weighbridge')}>
+            <ArrowLeft className="h-4 w-4 mr-1" />Back
+          </Button>
+          <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
+            {ticket.ticketNumber}
+          </h1>
+          <StatusBadge status={ticket.status} />
+        </div>
+        <DownloadPdfButton onGenerate={() => generateWeighbridgePdf(ticket)} />
       </div>
 
       <div className="rounded-[14px] border border-slate-200 bg-white p-6 mb-4">

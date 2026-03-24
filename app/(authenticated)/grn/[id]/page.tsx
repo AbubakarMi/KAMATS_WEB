@@ -9,6 +9,8 @@ import { DocumentLink } from '@/components/data-display/DocumentLink';
 import { DescriptionList } from '@/components/data-display/DescriptionList';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
+import { DownloadPdfButton } from '@/components/DownloadPdfButton';
+import { generateGRNPdf } from '@/lib/utils/pdfGenerators';
 import { useGetGRNQuery } from '@/lib/features/grn/grnApi';
 import { formatNumber, formatWeight, formatDateTime } from '@/lib/utils/formatters';
 
@@ -42,14 +44,17 @@ export default function GRNDetailPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <Button variant="outline" size="sm" onClick={() => router.push('/grn')}>
-          <ArrowLeft className="h-4 w-4 mr-1" />Back
-        </Button>
-        <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
-          {grn.grnNumber}
-        </h1>
-        <StatusBadge status={grn.status} />
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => router.push('/grn')}>
+            <ArrowLeft className="h-4 w-4 mr-1" />Back
+          </Button>
+          <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
+            {grn.grnNumber}
+          </h1>
+          <StatusBadge status={grn.status} />
+        </div>
+        <DownloadPdfButton onGenerate={() => generateGRNPdf(grn)} />
       </div>
 
       <div className="rounded-[14px] border border-slate-200 bg-white p-6 mb-4">

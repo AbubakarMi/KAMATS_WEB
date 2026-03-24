@@ -12,6 +12,8 @@ import { DescriptionList } from '@/components/data-display/DescriptionList';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 import { ApprovalActions } from '@/components/forms/ApprovalActions';
+import { DownloadPdfButton } from '@/components/DownloadPdfButton';
+import { generateSTOPdf } from '@/lib/utils/pdfGenerators';
 import { DataTable } from '@/components/tables/DataTable';
 import { useCanPerformAction } from '@/lib/hooks';
 import { Permissions as P } from '@/lib/utils/permissions';
@@ -107,6 +109,7 @@ export default function STODetailPage() {
           {sto.stoNumber}
         </h1>
         <div className="flex flex-wrap items-center gap-2">
+          <DownloadPdfButton onGenerate={() => generateSTOPdf(sto)} />
           {sto.status === 'Draft' && canSubmit && (
             <>
               <Button size="sm" onClick={handleSubmit}><Send className="h-4 w-4 mr-1" />Submit</Button>
