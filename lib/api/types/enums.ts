@@ -148,6 +148,15 @@ export const STOTrigger = {
 } as const;
 export type STOTrigger = (typeof STOTrigger)[keyof typeof STOTrigger];
 
+export const DispatchStatus = {
+  Scanning: 'Scanning',
+  WeightRecorded: 'WeightRecorded',
+  ShortApproved: 'ShortApproved',
+  Completed: 'Completed',
+  InTransit: 'InTransit',
+} as const;
+export type DispatchStatus = (typeof DispatchStatus)[keyof typeof DispatchStatus];
+
 export const TDNStatus = {
   Generated: 'Generated',
   InTransit: 'InTransit',

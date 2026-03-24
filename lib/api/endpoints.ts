@@ -150,6 +150,7 @@ export const endpoints = {
 
   // === M12 Dispatch (6) ===
   dispatch: {
+    list: '/transfer-dispatch',
     create: '/transfer-dispatch',
     detail: (id: string) => `/transfer-dispatch/${id}`,
     scanItem: (id: string) => `/transfer-dispatch/${id}/scan-item`,
