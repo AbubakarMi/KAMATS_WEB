@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.development
+.env.development.local
 .env.test
 .env.production
 /node_modules/
