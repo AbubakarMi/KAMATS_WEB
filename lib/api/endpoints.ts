@@ -235,6 +235,11 @@ export const endpoints = {
     export: '/audit/export',
   },
 
+  // === Cross-Cutting: Search (1) ===
+  search: {
+    query: '/search',
+  },
+
   // === Cross-Cutting: Sync (5) ===
   sync: {
     health: '/sync/health',

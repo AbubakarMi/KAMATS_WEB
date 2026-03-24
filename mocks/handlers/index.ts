@@ -19,6 +19,7 @@ import { lossHandlers } from './loss';
 import { alertHandlers } from './alerts';
 import { reportHandlers } from './reports';
 import { auditHandlers } from './audit';
+import { searchHandlers } from './search';
 
 export const handlers = [
   ...authHandlers,
@@ -42,4 +43,5 @@ export const handlers = [
   ...alertHandlers,
   ...reportHandlers,
   ...auditHandlers,
+  ...searchHandlers,
 ];
