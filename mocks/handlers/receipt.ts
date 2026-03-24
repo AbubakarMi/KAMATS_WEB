@@ -4,18 +4,45 @@ import { mockReceiptSessions, mockShortageReport } from '../data/receipt';
 const API = '/api/v1';
 
 export const receiptHandlers = [
+  // List receipt sessions
+  http.get(`${API}/transfer-receipt`, ({ request }) => {
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+    const page = parseInt(url.searchParams.get('page') ?? '1');
+    const pageSize = parseInt(url.searchParams.get('pageSize') ?? '20');
+
+    let filtered = [...mockReceiptSessions];
+    if (status) filtered = filtered.filter((s) => s.status === status);
+
+    const totalItems = filtered.length;
+    const start = (page - 1) * pageSize;
+    const paged = filtered.slice(start, start + pageSize);
+
+    return HttpResponse.json({
+      data: paged,
+      pagination: { page, pageSize, totalItems, totalPages: Math.ceil(totalItems / pageSize) },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
   // Create receipt session
   http.post(`${API}/transfer-receipt`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     const session = {
       id: crypto.randomUUID(),
       grd_number: `GRD-2026-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
-      ...body,
-      expected_bags: 0,
+      tdn_id: 'tdn-002',
+      tdn_number: 'TDN-2026-0002',
+      sto_id: 'sto-002',
+      sto_number: 'STO-2026-0002',
+      source_store_name: 'Central Store — Main',
+      consignment_qr: body.consignmentQr ?? body.consignment_qr,
+      expected_bags: 30,
       expected_items: [],
       received_items: [],
       missing_items: [],
       scanned_count: 0,
+      status: 'Receiving',
       arrival_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
     };

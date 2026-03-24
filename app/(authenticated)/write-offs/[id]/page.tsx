@@ -10,6 +10,8 @@ import { DescriptionList } from '@/components/data-display/DescriptionList';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 import { ApprovalActions } from '@/components/forms/ApprovalActions';
+import { DownloadPdfButton } from '@/components/DownloadPdfButton';
+import { generateWriteOffPdf } from '@/lib/utils/pdfGenerators';
 import { useCanPerformAction } from '@/lib/hooks';
 import { Permissions as P } from '@/lib/utils/permissions';
 import {
@@ -87,9 +89,12 @@ export default function WriteOffDetailPage() {
         <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
           {wo.requestNumber}
         </h1>
-        {wo.status === 'Pending' && canApprove && (
-          <ApprovalActions onApprove={handleApprove} onReject={handleReject} requireApprovalNotes />
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <DownloadPdfButton onGenerate={() => generateWriteOffPdf(wo)} />
+          {wo.status === 'Pending' && canApprove && (
+            <ApprovalActions onApprove={handleApprove} onReject={handleReject} requireApprovalNotes />
+          )}
+        </div>
       </div>
 
       <div className="rounded-[14px] border border-slate-200 bg-white p-6 mb-4">

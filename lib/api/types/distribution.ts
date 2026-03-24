@@ -1,5 +1,5 @@
 import type { UUID, Timestamp, Weight, PaginationParams, DateRangeParams } from './common';
-import type { STOStatus, STOTrigger, TDNStatus, BagCondition } from './enums';
+import type { STOStatus, STOTrigger, TDNStatus, DispatchStatus, ReceiptStatus, BagCondition } from './enums';
 
 // ========================
 // M11 — Stock Transfer Order
@@ -91,8 +91,13 @@ export interface DispatchSession {
   dispatchedWeightKg: Weight | null;
   expectedWeightKg: Weight | null;
   weightVariancePct: string | null;
-  status: string;
+  status: DispatchStatus;
   createdAt: Timestamp;
+}
+
+export interface DispatchListParams extends PaginationParams, DateRangeParams {
+  status?: DispatchStatus;
+  stoId?: UUID;
 }
 
 export interface CreateDispatchRequest {
@@ -173,8 +178,13 @@ export interface ReceiptSession {
     itemCode: string;
   }[];
   scannedCount: number;
+  status: ReceiptStatus;
   arrivalAt: Timestamp;
   createdAt: Timestamp;
+}
+
+export interface ReceiptListParams extends PaginationParams, DateRangeParams {
+  status?: ReceiptStatus;
 }
 
 export interface CreateReceiptRequest {

@@ -150,6 +150,7 @@ export const endpoints = {
 
   // === M12 Dispatch (6) ===
   dispatch: {
+    list: '/transfer-dispatch',
     create: '/transfer-dispatch',
     detail: (id: string) => `/transfer-dispatch/${id}`,
     scanItem: (id: string) => `/transfer-dispatch/${id}/scan-item`,
@@ -160,6 +161,7 @@ export const endpoints = {
 
   // === M13 Receipt (6) ===
   receipt: {
+    list: '/transfer-receipt',
     create: '/transfer-receipt',
     detail: (id: string) => `/transfer-receipt/${id}`,
     scanItem: (id: string) => `/transfer-receipt/${id}/scan-item`,
@@ -231,6 +233,11 @@ export const endpoints = {
     verifyChain: '/audit/verify-chain',
     verifyChainStore: (storeId: string) => `/audit/verify-chain/${storeId}`,
     export: '/audit/export',
+  },
+
+  // === Cross-Cutting: Search (1) ===
+  search: {
+    query: '/search',
   },
 
   // === Cross-Cutting: Sync (5) ===

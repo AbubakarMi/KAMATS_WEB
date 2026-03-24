@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Store, FileText, ShoppingCart, FlaskConical,
   Gauge, Inbox, Database, ArrowLeftRight, BarChart3, Bell,
   ShieldCheck, Settings, Building2, Calculator, AlertTriangle,
-  LayoutGrid, ChevronDown, LogOut,
+  LayoutGrid, ChevronDown, LogOut, Truck, PackageCheck,
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -99,6 +99,12 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
     if (hasPermission([Permissions.STO_CREATE, Permissions.STO_READ, Permissions.STO_APPROVE_CENTRAL_UNIT, Permissions.STO_APPROVE_UNIT_USER])) {
       distributionChildren.push({ key: '/transfers', icon: <ArrowLeftRight size={18} />, label: 'Transfers' });
     }
+    if (hasPermission([Permissions.TRANSFER_DISPATCH, Permissions.TRANSFER_READ])) {
+      distributionChildren.push({ key: '/dispatch', icon: <Truck size={18} />, label: 'Dispatch' });
+    }
+    if (hasPermission([Permissions.TRANSFER_RECEIVE, Permissions.TRANSFER_READ])) {
+      distributionChildren.push({ key: '/receipt', icon: <PackageCheck size={18} />, label: 'Receipt' });
+    }
     if (distributionChildren.length > 0) {
       items.push({ key: 'distribution', icon: <ArrowLeftRight size={20} />, label: 'Distribution', children: distributionChildren });
     }
@@ -118,17 +124,6 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
       items.push({ key: 'consumption-group', icon: <BarChart3 size={20} />, label: 'Consumption', children: consumptionChildren });
     }
 
-    // Top-level: Alerts, Reports, Audit Trail
-    if (hasPermission([Permissions.ALERTS_READ, Permissions.ALERTS_ACKNOWLEDGE, Permissions.ALERTS_CONFIGURE])) {
-      items.push({ key: '/alerts', icon: <Bell size={20} />, label: 'Alerts' });
-    }
-    if (hasPermission(Permissions.REPORTS_VIEW)) {
-      items.push({ key: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' });
-    }
-    if (hasPermission([Permissions.AUDIT_VIEW, Permissions.AUDIT_VERIFY])) {
-      items.push({ key: '/audit', icon: <ShieldCheck size={20} />, label: 'Audit Trail' });
-    }
-
     // Configuration (submenu: Stores, Devices, System)
     const configChildren: MenuItem[] = [];
     if (hasPermission([Permissions.USERS_MANAGE, Permissions.SYSTEM_CONFIGURE, Permissions.DEVICES_MANAGE])) {
@@ -139,6 +134,17 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
     }
     if (configChildren.length > 0) {
       items.push({ key: 'configuration', icon: <Settings size={20} />, label: 'Configuration', children: configChildren });
+    }
+
+    // Top-level: Alerts, Reports, Audit Trail
+    if (hasPermission([Permissions.ALERTS_READ, Permissions.ALERTS_ACKNOWLEDGE, Permissions.ALERTS_CONFIGURE])) {
+      items.push({ key: '/alerts', icon: <Bell size={20} />, label: 'Alerts' });
+    }
+    if (hasPermission(Permissions.REPORTS_VIEW)) {
+      items.push({ key: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' });
+    }
+    if (hasPermission([Permissions.AUDIT_VIEW, Permissions.AUDIT_VERIFY])) {
+      items.push({ key: '/audit', icon: <ShieldCheck size={20} />, label: 'Audit Trail' });
     }
 
     return items;

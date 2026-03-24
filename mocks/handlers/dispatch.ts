@@ -4,18 +4,43 @@ import { mockDispatchSessions } from '../data/dispatch';
 const API = '/api/v1';
 
 export const dispatchHandlers = [
+  // List dispatch sessions
+  http.get(`${API}/transfer-dispatch`, ({ request }) => {
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+    const page = parseInt(url.searchParams.get('page') ?? '1');
+    const pageSize = parseInt(url.searchParams.get('pageSize') ?? '20');
+
+    let filtered = [...mockDispatchSessions];
+    if (status) filtered = filtered.filter((s) => s.status === status);
+
+    const totalItems = filtered.length;
+    const start = (page - 1) * pageSize;
+    const paged = filtered.slice(start, start + pageSize);
+
+    return HttpResponse.json({
+      data: paged,
+      pagination: { page, pageSize, totalItems, totalPages: Math.ceil(totalItems / pageSize) },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
   // Create dispatch session
   http.post(`${API}/transfer-dispatch`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     const session = {
       id: crypto.randomUUID(),
-      ...body,
+      sto_id: body.stoId ?? body.sto_id,
+      sto_number: 'STO-2026-0006',
+      vehicle_reg: body.vehicleReg ?? body.vehicle_reg,
+      driver_name: body.driverName ?? body.driver_name,
+      driver_phone: body.driverPhone ?? body.driver_phone,
       expected_items: [],
       scanned_items: [],
       scanned_count: 0,
-      expected_count: 0,
+      expected_count: 40,
       dispatched_weight_kg: null,
-      expected_weight_kg: null,
+      expected_weight_kg: '2000.0000',
       weight_variance_pct: null,
       status: 'Scanning',
       created_at: new Date().toISOString(),

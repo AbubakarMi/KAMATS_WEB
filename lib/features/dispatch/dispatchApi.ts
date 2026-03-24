@@ -1,14 +1,19 @@
 import { baseApi } from '@/lib/store/baseApi';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
-  DispatchSession, CreateDispatchRequest,
+  DispatchSession, DispatchListParams, CreateDispatchRequest,
   ScanDispatchItemRequest, ScanDispatchItemResponse,
   RecordDispatchWeightRequest, ApproveShortShipmentRequest,
   CompleteDispatchRequest, CompleteDispatchResponse,
 } from '@/lib/api/types/distribution';
+import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const dispatchApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getDispatchList: builder.query<PaginatedResponse<DispatchSession>, DispatchListParams>({
+      query: (params) => ({ url: endpoints.dispatch.list, params }),
+      providesTags: ['Dispatch'],
+    }),
     getDispatch: builder.query<DispatchSession, string>({
       query: (id) => ({ url: endpoints.dispatch.detail(id) }),
       providesTags: ['Dispatch'],
@@ -37,6 +42,7 @@ export const dispatchApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetDispatchListQuery,
   useGetDispatchQuery,
   useCreateDispatchMutation,
   useScanDispatchItemMutation,

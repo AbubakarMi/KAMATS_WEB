@@ -60,3 +60,23 @@ export type Percentage = string; // decimal(8,4)
 // ISO 8601 timestamp/date strings
 export type Timestamp = string;
 export type DateString = string;
+
+// Global search
+export type SearchEntityType =
+  | 'po' | 'pr' | 'sto' | 'supplier'
+  | 'lot' | 'item' | 'grn' | 'dvr'
+  | 'weighbridge' | 'dispatch' | 'receipt';
+
+export interface SearchResult {
+  id: UUID;
+  type: SearchEntityType;
+  title: string;
+  subtitle: string;
+  status: string;
+  url: string;
+}
+
+export interface SearchResponse {
+  results: SearchResult[];
+  total: number;
+}

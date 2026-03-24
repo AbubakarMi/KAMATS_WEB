@@ -20,7 +20,8 @@
       "Bash(find C:\\\\Users\\\\X1 Carbon\\\\desktop\\\\projects\\\\KAMATS_WEB\\\\app\\\\\\(authenticated\\):*)",
       "Bash(du:*)",
       "Bash(npm run:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cat:*)"
     ]
   }
 }
