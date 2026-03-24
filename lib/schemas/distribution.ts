@@ -50,3 +50,29 @@ export const completeDispatchSchema = z.object({
   driverPin: z.string().min(1, 'Driver PIN is required'),
   expectedArrivalAt: z.string().min(1, 'Expected arrival time is required'),
 });
+
+// === M13 — Transfer Receipt ===
+
+export const createReceiptSchema = z.object({
+  consignmentQr: z
+    .string()
+    .min(1, 'Consignment QR code is required')
+    .max(100, 'QR code must not exceed 100 characters'),
+});
+
+export const reportDamageSchema = z.object({
+  itemId: z.string().min(1, 'Item is required'),
+  damageNotes: z
+    .string()
+    .min(5, 'Damage notes must be at least 5 characters')
+    .max(1000, 'Damage notes must not exceed 1000 characters'),
+});
+
+export const completeReceiptSchema = z.object({
+  receiverPinToken: z.string().min(1, 'Receiver PIN is required'),
+  notes: z
+    .string()
+    .max(2000, 'Notes must not exceed 2000 characters')
+    .optional()
+    .or(z.literal('')),
+});

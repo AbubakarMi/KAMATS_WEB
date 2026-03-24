@@ -157,6 +157,13 @@ export const DispatchStatus = {
 } as const;
 export type DispatchStatus = (typeof DispatchStatus)[keyof typeof DispatchStatus];
 
+export const ReceiptStatus = {
+  Receiving: 'Receiving',
+  Completed: 'Completed',
+  ShortageReported: 'ShortageReported',
+} as const;
+export type ReceiptStatus = (typeof ReceiptStatus)[keyof typeof ReceiptStatus];
+
 export const TDNStatus = {
   Generated: 'Generated',
   InTransit: 'InTransit',

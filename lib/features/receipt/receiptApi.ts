@@ -1,14 +1,19 @@
 import { baseApi } from '@/lib/store/baseApi';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
-  ReceiptSession, CreateReceiptRequest,
+  ReceiptSession, ReceiptListParams, CreateReceiptRequest,
   ScanReceiptItemRequest, ScanReceiptItemResponse,
   ReportDamageRequest, CompleteReceiptRequest,
   CompleteReceiptResponse, ShortageReport,
 } from '@/lib/api/types/distribution';
+import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const receiptApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getReceiptList: builder.query<PaginatedResponse<ReceiptSession>, ReceiptListParams>({
+      query: (params) => ({ url: endpoints.receipt.list, params }),
+      providesTags: ['Receipt'],
+    }),
     getReceipt: builder.query<ReceiptSession, string>({
       query: (id) => ({ url: endpoints.receipt.detail(id) }),
       providesTags: ['Receipt'],
@@ -37,6 +42,7 @@ export const receiptApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetReceiptListQuery,
   useGetReceiptQuery,
   useCreateReceiptMutation,
   useScanReceiptItemMutation,

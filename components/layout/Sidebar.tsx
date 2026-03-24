@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Store, FileText, ShoppingCart, FlaskConical,
   Gauge, Inbox, Database, ArrowLeftRight, BarChart3, Bell,
   ShieldCheck, Settings, Building2, Calculator, AlertTriangle,
-  LayoutGrid, ChevronDown, LogOut, Truck,
+  LayoutGrid, ChevronDown, LogOut, Truck, PackageCheck,
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -101,6 +101,9 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
     }
     if (hasPermission([Permissions.TRANSFER_DISPATCH, Permissions.TRANSFER_READ])) {
       distributionChildren.push({ key: '/dispatch', icon: <Truck size={18} />, label: 'Dispatch' });
+    }
+    if (hasPermission([Permissions.TRANSFER_RECEIVE, Permissions.TRANSFER_READ])) {
+      distributionChildren.push({ key: '/receipt', icon: <PackageCheck size={18} />, label: 'Receipt' });
     }
     if (distributionChildren.length > 0) {
       items.push({ key: 'distribution', icon: <ArrowLeftRight size={20} />, label: 'Distribution', children: distributionChildren });

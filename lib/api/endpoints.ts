@@ -161,6 +161,7 @@ export const endpoints = {
 
   // === M13 Receipt (6) ===
   receipt: {
+    list: '/transfer-receipt',
     create: '/transfer-receipt',
     detail: (id: string) => `/transfer-receipt/${id}`,
     scanItem: (id: string) => `/transfer-receipt/${id}/scan-item`,
