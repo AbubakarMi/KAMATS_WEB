@@ -9,6 +9,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const poApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getPOs: builder.query<PaginatedResponse<PO>, POListParams>({
       query: (params) => ({ url: endpoints.po.list, params }),

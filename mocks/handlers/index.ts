@@ -20,10 +20,14 @@ import { alertHandlers } from './alerts';
 import { reportHandlers } from './reports';
 import { auditHandlers } from './audit';
 import { searchHandlers } from './search';
+import { storeHandlers } from './stores';
+import { userHandlers } from './users';
 
 export const handlers = [
   ...authHandlers,
   ...adminHandlers,
+  ...storeHandlers,
+  ...userHandlers,
   ...supplierHandlers,
   ...procurementHandlers,
   ...qualityHandlers,

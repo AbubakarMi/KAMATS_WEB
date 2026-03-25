@@ -19,7 +19,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useGetPRsQuery, useGetPRQuery } from '@/lib/features/procurement/prApi';
 import { useCreatePOMutation } from '@/lib/features/procurement/poApi';
 import { useGetSuppliersQuery } from '@/lib/features/suppliers/suppliersApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
 import { formatMoney, formatNumber } from '@/lib/utils/formatters';
@@ -49,7 +49,7 @@ function CreatePOForm() {
   const { data: prsData } = useGetPRsQuery({ status: 'Approved', page: 1, pageSize: 200 });
   const { data: selectedPR } = useGetPRQuery(prIdFromUrl!, { skip: !prIdFromUrl });
   const { data: suppliersData } = useGetSuppliersQuery({ page: 1, pageSize: 200 });
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [createPO, { isLoading: creating }] = useCreatePOMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
@@ -326,7 +326,7 @@ function CreatePOForm() {
                       <Input
                         type="number"
                         min={1}
-                        {...form.register(`lines.${index}.quantityBags`, { valueAsNumber: true })}
+                        {...form.register(`lines.${index}.quantityBags`)}
                       />
                       {form.formState.errors.lines?.[index]?.quantityBags && (
                         <p className="text-xs text-red-500 mt-1">
@@ -339,7 +339,7 @@ function CreatePOForm() {
                       <Input
                         type="number"
                         min={1}
-                        {...form.register(`lines.${index}.standardWeightKg`, { valueAsNumber: true })}
+                        {...form.register(`lines.${index}.standardWeightKg`)}
                       />
                       {form.formState.errors.lines?.[index]?.standardWeightKg && (
                         <p className="text-xs text-red-500 mt-1">
@@ -353,7 +353,7 @@ function CreatePOForm() {
                         type="number"
                         min={0.01}
                         step="0.01"
-                        {...form.register(`lines.${index}.unitPrice`, { valueAsNumber: true })}
+                        {...form.register(`lines.${index}.unitPrice`)}
                       />
                       {form.formState.errors.lines?.[index]?.unitPrice && (
                         <p className="text-xs text-red-500 mt-1">

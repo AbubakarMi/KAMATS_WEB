@@ -17,7 +17,7 @@ import {
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { useCreatePRMutation } from '@/lib/features/procurement/prApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
 import { createPRSchema } from '@/lib/schemas';
@@ -32,13 +32,17 @@ type FormValues = {
 
 export default function CreatePRPage() {
   const router = useRouter();
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [createPR, { isLoading: creating }] = useCreatePRMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const form = useForm<FormValues>({ resolver: zodResolver(createPRSchema) as any, mode: 'onBlur' });
+  const form = useForm<FormValues>({
+    resolver: zodResolver(createPRSchema) as any,
+    mode: 'onBlur',
+    defaultValues: { storeId: '', quantityBags: '' as unknown as number, justification: '', requestedDeliveryDate: '' },
+  });
 
   const onSubmit = (values: FormValues) => {
     setPendingValues(values);
@@ -101,7 +105,7 @@ export default function CreatePRPage() {
             </div>
             <div>
               <Label>Quantity (bags)</Label>
-              <Input type="number" min={1} {...form.register('quantityBags', { valueAsNumber: true })} />
+              <Input type="number" min={1} {...form.register('quantityBags')} />
               {form.formState.errors.quantityBags && (
                 <p className="text-xs text-red-500 mt-1">{form.formState.errors.quantityBags.message}</p>
               )}

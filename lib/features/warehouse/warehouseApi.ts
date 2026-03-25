@@ -5,11 +5,13 @@ import type {
   LocationContents, WarehouseMap,
   InternalTransferRequest, InternalTransferResponse,
 } from '@/lib/api/types/inventory';
-
 export const warehouseApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getLocations: builder.query<StorageLocation[], StorageLocationListParams>({
       query: (params) => ({ url: endpoints.locations.list, params }),
+      transformResponse: (response: StorageLocation[] | { data: StorageLocation[] }) =>
+        Array.isArray(response) ? response : response?.data ?? [],
       providesTags: ['Location'],
     }),
     getLocation: builder.query<StorageLocation, string>({

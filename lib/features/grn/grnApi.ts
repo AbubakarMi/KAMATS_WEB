@@ -6,6 +6,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const grnApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getGRNs: builder.query<PaginatedResponse<GRN>, GRNListParams>({
       query: (params) => ({ url: endpoints.grn.list, params }),

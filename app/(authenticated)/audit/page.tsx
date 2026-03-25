@@ -16,7 +16,7 @@ import {
 import { DataTable } from '@/components/tables/DataTable';
 import { usePagination } from '@/lib/hooks';
 import { useGetAuditEventsQuery, useLazyVerifyChainQuery } from '@/lib/features/audit/auditApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { formatDateTime, formatNumber } from '@/lib/utils/formatters';
 import type { AuditEvent } from '@/lib/api/types/audit';
 import type { StoreChainResult, VerifyChainResponse } from '@/lib/api/types/audit';
@@ -36,7 +36,7 @@ export default function AuditPage() {
     entityType: entityTypeFilter !== 'all' ? entityTypeFilter : undefined,
     storeId: storeFilter !== 'all' ? storeFilter : undefined,
   });
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [triggerVerify, { data: chainResult, isLoading: verifying }] = useLazyVerifyChainQuery();
 
   const columns: ColumnDef<AuditEvent, unknown>[] = [

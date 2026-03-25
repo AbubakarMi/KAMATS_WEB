@@ -7,6 +7,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const qualityApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getDVRs: builder.query<PaginatedResponse<DVR>, DVRListParams>({
       query: (params) => ({ url: endpoints.dvr.list, params }),

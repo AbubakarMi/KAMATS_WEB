@@ -19,7 +19,7 @@ import {
   useGetDosageConfigsQuery,
   useUpdateDosageConfigMutation,
 } from '@/lib/features/dosage/dosageApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
 import type { CreateDosageConfigRequest } from '@/lib/api/types/consumption';
@@ -30,7 +30,7 @@ export default function EditDosageConfigPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { data: configs, isLoading: loadingConfigs } = useGetDosageConfigsQuery();
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [updateConfig, { isLoading: updating }] = useUpdateDosageConfigMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);

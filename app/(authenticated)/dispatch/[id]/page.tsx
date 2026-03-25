@@ -22,6 +22,8 @@ import { DataTable } from '@/components/tables/DataTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DownloadPdfButton } from '@/components/DownloadPdfButton';
 import { generateDispatchPdf } from '@/lib/utils/pdfGenerators';
+import { useCanPerformAction } from '@/lib/hooks';
+import { Permissions as P } from '@/lib/utils/permissions';
 import {
   useGetDispatchQuery,
   useScanDispatchItemMutation,
@@ -87,7 +89,8 @@ export default function DispatchDetailPage() {
 
   const isScanning = dispatch.status === 'Scanning';
   const canRecordWeight = dispatch.status === 'Scanning' && dispatch.scannedCount > 0;
-  const canApproveShort = dispatch.status === 'Scanning' && dispatch.scannedCount > 0 && dispatch.scannedCount < dispatch.expectedCount;
+  const { canPerform: canApproveShortPerm } = useCanPerformAction([P.STO_APPROVE_CENTRAL_UNIT, P.STO_APPROVE_UNIT_USER], null, false);
+  const canApproveShort = dispatch.status === 'Scanning' && dispatch.scannedCount > 0 && dispatch.scannedCount < dispatch.expectedCount && canApproveShortPerm;
   const canComplete = dispatch.status === 'WeightRecorded' || dispatch.status === 'ShortApproved';
 
   const handleScan = async () => {

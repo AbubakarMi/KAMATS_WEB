@@ -9,6 +9,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const dispatchApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getDispatchList: builder.query<PaginatedResponse<DispatchSession>, DispatchListParams>({
       query: (params) => ({ url: endpoints.dispatch.list, params }),

@@ -42,7 +42,7 @@ export default function PODetailPage() {
 
   const { canPerform: canSubmit } = useCanPerformAction(P.PO_CREATE, null, false);
   const { canPerform: canManagerApprove } = useCanPerformAction(P.PO_APPROVE_MANAGER, po?.requestedBy);
-  const { canPerform: canFinanceApprove } = useCanPerformAction(P.PO_APPROVE_FINANCE, po?.managerApprovedBy);
+  const { canPerform: canFinanceApprove } = useCanPerformAction(P.PO_APPROVE_FINANCE, po?.requestedBy);
 
   const handleSubmit = useCallback(async () => {
     try {

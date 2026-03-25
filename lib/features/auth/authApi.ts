@@ -15,6 +15,7 @@ import type {
 } from '@/lib/api/types/auth';
 
 export const authApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (body) => ({

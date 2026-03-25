@@ -17,7 +17,7 @@ import {
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { useCreateWriteOffMutation } from '@/lib/features/loss/lossApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
 import { createWriteOffSchema } from '@/lib/schemas';
@@ -38,13 +38,17 @@ type FormValues = {
 
 export default function CreateWriteOffPage() {
   const router = useRouter();
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [createWriteOff, { isLoading: creating }] = useCreateWriteOffMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const form = useForm<FormValues>({ resolver: zodResolver(createWriteOffSchema) as any, mode: 'onBlur' });
+  const form = useForm<FormValues>({
+    resolver: zodResolver(createWriteOffSchema) as any,
+    mode: 'onBlur',
+    defaultValues: { storeId: '', category: '', bags: '' as unknown as number, lotId: '', description: '' },
+  });
 
   const onSubmit = (values: FormValues) => {
     setPendingValues(values);
@@ -119,7 +123,7 @@ export default function CreateWriteOffPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Number of Bags</Label>
-              <Input type="number" min={1} {...form.register('bags', { valueAsNumber: true })} />
+              <Input type="number" min={1} {...form.register('bags')} />
               {form.formState.errors.bags && (
                 <p className="text-xs text-red-500 mt-1">{form.formState.errors.bags.message}</p>
               )}

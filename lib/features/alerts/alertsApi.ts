@@ -7,6 +7,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const alertsApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getAlerts: builder.query<PaginatedResponse<Alert>, AlertListParams>({
       query: (params) => ({ url: endpoints.alerts.list, params }),
@@ -18,6 +19,8 @@ export const alertsApi = baseApi.injectEndpoints({
     }),
     getAlertRules: builder.query<AlertRule[], void>({
       query: () => ({ url: endpoints.alerts.rules }),
+      transformResponse: (response: AlertRule[] | { data: AlertRule[] }) =>
+        Array.isArray(response) ? response : response?.data ?? [],
       providesTags: ['AlertRule'],
     }),
     createAlertRule: builder.mutation<AlertRule, CreateAlertRuleRequest>({

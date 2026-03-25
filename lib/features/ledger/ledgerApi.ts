@@ -7,6 +7,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const ledgerApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getStockBalance: builder.query<StockBalance, string>({
       query: (storeId) => ({ url: endpoints.ledger.balance(storeId) }),

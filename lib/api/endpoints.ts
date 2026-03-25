@@ -38,7 +38,6 @@ export const endpoints = {
     approve: (id: string) => `/suppliers/${id}/approve`,
     reject: (id: string) => `/suppliers/${id}/reject`,
     suspend: (id: string) => `/suppliers/${id}/suspend`,
-    deactivate: (id: string) => `/suppliers/${id}/deactivate`,
     reactivate: (id: string) => `/suppliers/${id}/reactivate`,
     scorecard: (id: string) => `/suppliers/${id}/scorecard`,
   },
@@ -233,6 +232,18 @@ export const endpoints = {
     verifyChain: '/audit/verify-chain',
     verifyChainStore: (storeId: string) => `/audit/verify-chain/${storeId}`,
     export: '/audit/export',
+  },
+
+  // === Stores (read-only, all authenticated users) ===
+  stores: {
+    list: '/stores',
+    detail: (id: string) => `/stores/${id}`,
+  },
+
+  // === Users (read-only, all authenticated users) ===
+  users: {
+    list: '/users',
+    detail: (id: string) => `/users/${id}`,
   },
 
   // === Cross-Cutting: Search (1) ===

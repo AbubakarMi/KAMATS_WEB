@@ -9,6 +9,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const stockCountApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getStockCounts: builder.query<PaginatedResponse<StockCount>, StockCountListParams>({
       query: (params) => ({ url: endpoints.stockCount.list, params }),

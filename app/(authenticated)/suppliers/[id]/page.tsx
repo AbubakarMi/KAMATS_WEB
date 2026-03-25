@@ -1,18 +1,23 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Ban, Power, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Ban, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
 import { DescriptionList } from '@/components/data-display/DescriptionList';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 import { KpiCard } from '@/components/charts/KpiCard';
 import { ApprovalActions } from '@/components/forms/ApprovalActions';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { DataTable } from '@/components/tables/DataTable';
 import { useCanPerformAction } from '@/lib/hooks';
 import { Permissions as P } from '@/lib/utils/permissions';
@@ -22,7 +27,6 @@ import {
   useApproveSupplierMutation,
   useRejectSupplierMutation,
   useSuspendSupplierMutation,
-  useDeactivateSupplierMutation,
   useReactivateSupplierMutation,
 } from '@/lib/features/suppliers/suppliersApi';
 import { formatDate, formatPercentage, formatDateTime } from '@/lib/utils/formatters';
@@ -76,12 +80,15 @@ export default function SupplierDetailPage() {
   const [approveSupplier] = useApproveSupplierMutation();
   const [rejectSupplier] = useRejectSupplierMutation();
   const [suspendSupplier] = useSuspendSupplierMutation();
-  const [deactivateSupplier] = useDeactivateSupplierMutation();
   const [reactivateSupplier] = useReactivateSupplierMutation();
 
   const { canPerform: canApprove } = useCanPerformAction(P.SUPPLIERS_APPROVE, supplier?.createdBy);
 
-  const handleApprove = useCallback(async () => {
+  const [suspendOpen, setSuspendOpen] = useState(false);
+  const [suspendReason, setSuspendReason] = useState('');
+  const [reactivateOpen, setReactivateOpen] = useState(false);
+
+  const handleApprove = useCallback(async (notes?: string) => {
     try {
       await approveSupplier(id).unwrap();
       toast.success('Supplier approved');
@@ -96,23 +103,20 @@ export default function SupplierDetailPage() {
   }, [rejectSupplier, id]);
 
   const handleSuspend = useCallback(async () => {
+    if (!suspendReason.trim()) return;
     try {
-      await suspendSupplier({ id, data: { reason: 'Performance issues' } }).unwrap();
+      await suspendSupplier({ id, data: { reason: suspendReason.trim() } }).unwrap();
       toast.success('Supplier suspended');
+      setSuspendOpen(false);
+      setSuspendReason('');
     } catch { toast.error('Failed to suspend supplier'); }
-  }, [suspendSupplier, id]);
-
-  const handleDeactivate = useCallback(async () => {
-    try {
-      await deactivateSupplier({ id, data: { reason: 'No longer needed' } }).unwrap();
-      toast.success('Supplier deactivated');
-    } catch { toast.error('Failed to deactivate supplier'); }
-  }, [deactivateSupplier, id]);
+  }, [suspendSupplier, id, suspendReason]);
 
   const handleReactivate = useCallback(async () => {
     try {
-      await reactivateSupplier({ id, data: {} }).unwrap();
+      await reactivateSupplier({ id }).unwrap();
       toast.success('Supplier reactivated');
+      setReactivateOpen(false);
     } catch { toast.error('Failed to reactivate supplier'); }
   }, [reactivateSupplier, id]);
 
@@ -154,20 +158,15 @@ export default function SupplierDetailPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {supplier.status === 'PendingApproval' && canApprove && (
-            <ApprovalActions onApprove={handleApprove} onReject={handleReject} />
+            <ApprovalActions onApprove={handleApprove} onReject={handleReject} requireApprovalNotes />
           )}
           {supplier.status === 'Active' && canApprove && (
-            <>
-              <Button variant="destructive" size="sm" onClick={handleSuspend}>
-                <Ban className="h-4 w-4 mr-1" />Suspend
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleDeactivate}>
-                <Power className="h-4 w-4 mr-1" />Deactivate
-              </Button>
-            </>
+            <Button variant="destructive" size="sm" onClick={() => setSuspendOpen(true)}>
+              <Ban className="h-4 w-4 mr-1" />Suspend
+            </Button>
           )}
           {(supplier.status === 'Suspended' || supplier.status === 'Deactivated') && canApprove && (
-            <Button size="sm" onClick={handleReactivate}>
+            <Button size="sm" onClick={() => setReactivateOpen(true)}>
               <RotateCcw className="h-4 w-4 mr-1" />Reactivate
             </Button>
           )}
@@ -200,6 +199,43 @@ export default function SupplierDetailPage() {
           </div>
         </>
       )}
+
+      {/* Suspend Dialog */}
+      <Dialog open={suspendOpen} onOpenChange={(open) => { if (!open) { setSuspendOpen(false); setSuspendReason(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Suspend Supplier</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for suspending this supplier. This will be recorded in the audit trail.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={3}
+            value={suspendReason}
+            onChange={(e) => setSuspendReason(e.target.value)}
+            placeholder="Enter suspension reason..."
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setSuspendOpen(false); setSuspendReason(''); }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleSuspend} disabled={!suspendReason.trim()}>
+              Confirm Suspension
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reactivate Dialog */}
+      <ConfirmDialog
+        open={reactivateOpen}
+        onOpenChange={setReactivateOpen}
+        title="Reactivate Supplier"
+        description="Are you sure you want to reactivate this supplier? They will be restored to Active status."
+        confirmLabel="Reactivate"
+        onConfirm={handleReactivate}
+      />
     </div>
   );
 }

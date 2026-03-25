@@ -8,6 +8,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const stoApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getSTOs: builder.query<PaginatedResponse<STO>, STOListParams>({
       query: (params) => ({ url: endpoints.sto.list, params }),

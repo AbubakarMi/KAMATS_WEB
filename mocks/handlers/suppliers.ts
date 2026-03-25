@@ -115,14 +115,6 @@ export const supplierHandlers = [
     });
   }),
 
-  // Deactivate supplier
-  http.patch(`${API}/suppliers/:id/deactivate`, ({ params }) => {
-    return HttpResponse.json({
-      data: { id: params.id, status: 'Deactivated' },
-      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
-    });
-  }),
-
   // Reactivate supplier
   http.patch(`${API}/suppliers/:id/reactivate`, ({ params }) => {
     return HttpResponse.json({

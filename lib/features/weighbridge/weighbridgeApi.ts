@@ -9,6 +9,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const weighbridgeApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getWeighbridgeTickets: builder.query<PaginatedResponse<WeighbridgeTicket>, WeighbridgeListParams>({
       query: (params) => ({ url: endpoints.weighbridge.list, params }),
