@@ -12,3 +12,4 @@ export const createStockCountSchema = z.object({
     .string()
     .min(1, 'Scheduled date is required'),
 });
+ 
