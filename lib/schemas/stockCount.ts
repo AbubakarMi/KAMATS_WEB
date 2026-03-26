@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createStockCountSchema = z.object({
-  countType: z.enum(['Full', 'Cycle', 'Spot'], {
+  countType: z.enum(['FullCount', 'CycleCount', 'SpotCount'], {
     error: 'Select a count type',
   }),
   storeId: z.string().uuid('Select a store'),
