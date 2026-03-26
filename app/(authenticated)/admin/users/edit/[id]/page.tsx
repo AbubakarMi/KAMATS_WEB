@@ -22,6 +22,7 @@ import {
 } from '@/lib/features/admin/adminApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
+import { AVAILABLE_ROLES } from '@/lib/constants/roles';
 import type { UpdateUserRequest } from '@/lib/api/types/admin';
 
 type FormValues = {
@@ -31,6 +32,7 @@ type FormValues = {
   lastName: string;
   phoneNumber?: string;
   storeId?: string;
+  roleIds: string[];
 };
 
 export default function EditUserPage() {
@@ -44,7 +46,16 @@ export default function EditUserPage() {
 
   const user = usersData?.data?.find((u) => u.id === id);
 
-  const form = useForm<FormValues>({ mode: 'onBlur' });
+  const form = useForm<FormValues>({ mode: 'onBlur', defaultValues: { roleIds: [] } });
+  const selectedRoles = form.watch('roleIds');
+
+  const toggleRole = (role: string) => {
+    const current = form.getValues('roleIds');
+    const next = current.includes(role)
+      ? current.filter((r) => r !== role)
+      : [...current, role];
+    form.setValue('roleIds', next, { shouldValidate: true });
+  };
 
   useEffect(() => {
     if (user) {
@@ -55,11 +66,16 @@ export default function EditUserPage() {
         lastName: user.lastName,
         phoneNumber: user.phoneNumber ?? '',
         storeId: user.storeId ?? undefined,
+        roleIds: user.roles?.map((r) => r.name) ?? [],
       });
     }
   }, [user, form]);
 
   const onSubmit = (values: FormValues) => {
+    if (values.roleIds.length === 0) {
+      form.setError('roleIds', { message: 'Select at least one role' });
+      return;
+    }
     setPendingValues(values);
     setConfirmOpen(true);
   };
@@ -68,7 +84,15 @@ export default function EditUserPage() {
     if (!pendingValues) return;
     try {
       const sanitized = sanitizeFormValues(pendingValues as unknown as Record<string, unknown>);
-      await updateUser({ id, data: sanitized as unknown as UpdateUserRequest }).unwrap();
+      const req: UpdateUserRequest = {
+        email: sanitized.email as string,
+        firstName: sanitized.firstName as string,
+        lastName: sanitized.lastName as string,
+        phoneNumber: sanitized.phoneNumber as string | undefined,
+        storeId: sanitized.storeId as string | undefined,
+        roleIds: pendingValues.roleIds,
+      };
+      await updateUser({ id, data: req }).unwrap();
       toast.success('User updated');
       router.push('/admin/users');
     } catch (err) {
@@ -156,6 +180,33 @@ export default function EditUserPage() {
                 </Select>
               )} />
             </div>
+          </div>
+
+          {/* Roles */}
+          <div>
+            <Label>Roles</Label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {AVAILABLE_ROLES.map((role) => {
+                const selected = selectedRoles?.includes(role.value);
+                return (
+                  <button
+                    key={role.value}
+                    type="button"
+                    onClick={() => toggleRole(role.value)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                      selected
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600'
+                    }`}
+                  >
+                    {role.label}
+                  </button>
+                );
+              })}
+            </div>
+            {form.formState.errors.roleIds && (
+              <p className="text-xs text-red-500 mt-1">{form.formState.errors.roleIds.message}</p>
+            )}
           </div>
 
           <div className="border-t border-slate-200 pt-4 flex justify-end gap-3">

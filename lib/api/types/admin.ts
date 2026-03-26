@@ -47,7 +47,7 @@ export interface CreateUserRequest {
   lastName: string;
   phoneNumber?: string;
   storeId?: UUID;
-  roleIds: UUID[];
+  roleIds: string[];
 }
 
 export interface UpdateUserRequest {
@@ -55,8 +55,9 @@ export interface UpdateUserRequest {
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  isActive?: boolean;
   storeId?: UUID;
-  roleIds?: UUID[];
+  roleIds?: string[];
 }
 
 export interface DeactivateUserResponse {
