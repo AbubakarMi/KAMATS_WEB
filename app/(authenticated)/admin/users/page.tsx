@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, Ban, Unlock, Pencil } from 'lucide-react';
+import { Plus, Ban, Unlock, Pencil, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { DataTable } from '@/components/tables/DataTable';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
@@ -15,25 +16,37 @@ import {
   useGetUsersQuery,
   useDeactivateUserMutation,
   useUnlockUserMutation,
+  useUpdateUserMutation,
 } from '@/lib/features/admin/adminApi';
 import { formatDateTime } from '@/lib/utils/formatters';
 import type { User } from '@/lib/api/types/admin';
 
+type PendingAction = { type: 'deactivate' | 'reactivate'; userId: string; username: string };
+
 export default function UsersPage() {
   const { params, setPage, setPageSize, setSort } = usePagination();
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   const { data, isLoading, isError, error: queryError, refetch } = useGetUsersQuery(params);
   const [deactivateUser] = useDeactivateUserMutation();
   const [unlockUser] = useUnlockUserMutation();
+  const [updateUser] = useUpdateUserMutation();
 
-  const handleDeactivate = useCallback(async (id: string) => {
+  const handleConfirm = useCallback(async () => {
+    if (!pendingAction) return;
     try {
-      await deactivateUser(id).unwrap();
-      toast.success('User deactivated');
+      if (pendingAction.type === 'deactivate') {
+        await deactivateUser(pendingAction.userId).unwrap();
+        toast.success('User deactivated');
+      } else {
+        await updateUser({ id: pendingAction.userId, data: { isActive: true } }).unwrap();
+        toast.success('User reactivated');
+      }
     } catch {
-      toast.error('Failed to deactivate user');
+      toast.error(`Failed to ${pendingAction.type} user`);
+      throw new Error();
     }
-  }, [deactivateUser]);
+  }, [pendingAction, deactivateUser, updateUser]);
 
   const handleUnlock = useCallback(async (id: string) => {
     try {
@@ -102,9 +115,23 @@ export default function UsersPage() {
               <Pencil className="h-3.5 w-3.5" />
             </Link>
           </Button>
-          {row.original.isActive && (
-            <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDeactivate(row.original.id)}>
+          {row.original.isActive ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-600"
+              onClick={() => setPendingAction({ type: 'deactivate', userId: row.original.id, username: row.original.username })}
+            >
               <Ban className="h-3.5 w-3.5" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-emerald-600"
+              onClick={() => setPendingAction({ type: 'reactivate', userId: row.original.id, username: row.original.username })}
+            >
+              <UserCheck className="h-3.5 w-3.5" />
             </Button>
           )}
           {row.original.lockoutEnd && (
@@ -141,6 +168,20 @@ export default function UsersPage() {
         onRefresh={refetch}
         showSearch={false}
         showExport={false}
+      />
+
+      <ConfirmDialog
+        open={!!pendingAction}
+        onOpenChange={(open) => { if (!open) setPendingAction(null); }}
+        title={pendingAction?.type === 'deactivate' ? 'Deactivate User?' : 'Reactivate User?'}
+        description={
+          pendingAction?.type === 'deactivate'
+            ? `Are you sure you want to deactivate "${pendingAction.username}"? They will be logged out and unable to sign in.`
+            : `Are you sure you want to reactivate "${pendingAction?.username}"? They will be able to sign in again.`
+        }
+        confirmLabel={pendingAction?.type === 'deactivate' ? 'Deactivate' : 'Reactivate'}
+        variant={pendingAction?.type === 'deactivate' ? 'destructive' : 'default'}
+        onConfirm={handleConfirm}
       />
     </div>
   );

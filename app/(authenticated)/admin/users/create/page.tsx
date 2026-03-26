@@ -17,6 +17,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useCreateUserMutation, useGetStoresQuery } from '@/lib/features/admin/adminApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
+import { AVAILABLE_ROLES } from '@/lib/constants/roles';
 import type { CreateUserRequest } from '@/lib/api/types/admin';
 
 type FormValues = {
@@ -27,6 +28,7 @@ type FormValues = {
   lastName: string;
   phoneNumber?: string;
   storeId?: string;
+  roleIds: string[];
 };
 
 export default function CreateUserPage() {
@@ -36,9 +38,22 @@ export default function CreateUserPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
 
-  const form = useForm<FormValues>({ mode: 'onBlur' });
+  const form = useForm<FormValues>({ mode: 'onBlur', defaultValues: { roleIds: [] } });
+  const selectedRoles = form.watch('roleIds');
+
+  const toggleRole = (role: string) => {
+    const current = form.getValues('roleIds');
+    const next = current.includes(role)
+      ? current.filter((r) => r !== role)
+      : [...current, role];
+    form.setValue('roleIds', next, { shouldValidate: true });
+  };
 
   const onSubmit = (values: FormValues) => {
+    if (values.roleIds.length === 0) {
+      form.setError('roleIds', { message: 'Select at least one role' });
+      return;
+    }
     setPendingValues(values);
     setConfirmOpen(true);
   };
@@ -47,7 +62,17 @@ export default function CreateUserPage() {
     if (!pendingValues) return;
     try {
       const sanitized = sanitizeFormValues(pendingValues as unknown as Record<string, unknown>);
-      await createUser({ ...sanitized, roleIds: [] } as unknown as CreateUserRequest).unwrap();
+      const req: CreateUserRequest = {
+        username: sanitized.username as string,
+        email: sanitized.email as string,
+        password: sanitized.password as string,
+        firstName: sanitized.firstName as string,
+        lastName: sanitized.lastName as string,
+        phoneNumber: sanitized.phoneNumber as string | undefined,
+        storeId: sanitized.storeId as string | undefined,
+        roleIds: pendingValues.roleIds,
+      };
+      await createUser(req).unwrap();
       toast.success('User created');
       router.push('/admin/users');
     } catch (err) {
@@ -128,6 +153,33 @@ export default function CreateUserPage() {
                 </Select>
               )} />
             </div>
+          </div>
+
+          {/* Roles */}
+          <div>
+            <Label>Roles</Label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {AVAILABLE_ROLES.map((role) => {
+                const selected = selectedRoles?.includes(role.value);
+                return (
+                  <button
+                    key={role.value}
+                    type="button"
+                    onClick={() => toggleRole(role.value)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                      selected
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600'
+                    }`}
+                  >
+                    {role.label}
+                  </button>
+                );
+              })}
+            </div>
+            {form.formState.errors.roleIds && (
+              <p className="text-xs text-red-500 mt-1">{form.formState.errors.roleIds.message}</p>
+            )}
           </div>
 
           <div className="border-t border-slate-200 pt-4 flex justify-end gap-3">
