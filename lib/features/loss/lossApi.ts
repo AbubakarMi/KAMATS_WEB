@@ -9,6 +9,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const lossApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getWriteOffs: builder.query<PaginatedResponse<WriteOff>, WriteOffListParams>({
       query: (params) => ({ url: endpoints.writeOff.list, params }),

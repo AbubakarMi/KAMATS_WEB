@@ -74,7 +74,7 @@ export default function StockCountDetailPage() {
   const [rejectVariance] = useRejectVarianceMutation();
   const [orderRecount] = useOrderRecountMutation();
 
-  const { canPerform: canApproveVariance } = useCanPerformAction(P.STOCKCOUNT_APPROVE, count?.assignedTo);
+  const { canPerform: canApproveVariance } = useCanPerformAction(P.STOCKCOUNT_APPROVE, count?.createdBy);
 
   if (isError) return <QueryErrorAlert error={error} />;
   if (isLoading || !count) return <DetailPageSkeleton descriptionRows={8} hasTable />;

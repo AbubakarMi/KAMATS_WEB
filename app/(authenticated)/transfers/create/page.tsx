@@ -17,7 +17,7 @@ import {
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { useCreateSTOMutation } from '@/lib/features/transfers/stoApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
 import { createSTOSchema } from '@/lib/schemas';
@@ -33,13 +33,17 @@ type FormValues = {
 
 export default function CreateSTOPage() {
   const router = useRouter();
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [createSTO, { isLoading: creating }] = useCreateSTOMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const form = useForm<FormValues>({ resolver: zodResolver(createSTOSchema) as any, mode: 'onBlur' });
+  const form = useForm<FormValues>({
+    resolver: zodResolver(createSTOSchema) as any,
+    mode: 'onBlur',
+    defaultValues: { sourceStoreId: '', destinationStoreId: '', requestedBags: '' as unknown as number, requestedDelivery: '', justification: '', notes: '' },
+  });
 
   const onSubmit = (values: FormValues) => {
     setPendingValues(values);
@@ -63,6 +67,7 @@ export default function CreateSTOPage() {
     } catch (err) {
       const fallback = setApiFieldErrors(form.setError, err);
       if (fallback) toast.error(fallback);
+      throw err;
     }
   };
 
@@ -113,7 +118,7 @@ export default function CreateSTOPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Requested Bags</Label>
-              <Input type="number" min={1} {...form.register('requestedBags', { valueAsNumber: true })} />
+              <Input type="number" min={1} {...form.register('requestedBags')} />
               {form.formState.errors.requestedBags && (
                 <p className="text-xs text-red-500 mt-1">{form.formState.errors.requestedBags.message}</p>
               )}

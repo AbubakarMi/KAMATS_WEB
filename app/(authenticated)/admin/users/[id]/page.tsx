@@ -45,7 +45,7 @@ export default function UserDetailPage() {
       label: 'Roles',
       value: (
         <div className="flex flex-wrap gap-1">
-          {user.roles.map((r) => (
+          {(user.roles ?? []).map((r) => (
             <span key={r.id} className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{r.name}</span>
           ))}
         </div>
@@ -71,7 +71,7 @@ export default function UserDetailPage() {
         <DescriptionList items={items} columns={2} />
       </div>
 
-      {user.storeAssignments.length > 0 && (
+      {user.storeAssignments?.length > 0 && (
         <div className="rounded-[14px] border border-slate-200 bg-white p-6">
           <h3 className="text-sm font-semibold text-slate-700 mb-3">Store Assignments</h3>
           <div className="space-y-2">

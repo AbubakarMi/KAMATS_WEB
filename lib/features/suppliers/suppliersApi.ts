@@ -4,12 +4,12 @@ import type {
   Supplier, SupplierListParams, CreateSupplierRequest,
   ApproveSupplierResponse, RejectSupplierRequest,
   SuspendSupplierRequest, SuspendSupplierResponse,
-  DeactivateSupplierRequest, ReactivateSupplierRequest,
   SupplierScorecard, SupplierScorecardParams,
 } from '@/lib/api/types/suppliers';
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const suppliersApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getSuppliers: builder.query<PaginatedResponse<Supplier>, SupplierListParams>({
       query: (params) => ({ url: endpoints.suppliers.list, params }),
@@ -35,12 +35,8 @@ export const suppliersApi = baseApi.injectEndpoints({
       query: ({ id, data }) => ({ url: endpoints.suppliers.suspend(id), method: 'PATCH', data }),
       invalidatesTags: ['Supplier'],
     }),
-    deactivateSupplier: builder.mutation<void, { id: string; data: DeactivateSupplierRequest }>({
-      query: ({ id, data }) => ({ url: endpoints.suppliers.deactivate(id), method: 'PATCH', data }),
-      invalidatesTags: ['Supplier'],
-    }),
-    reactivateSupplier: builder.mutation<void, { id: string; data: ReactivateSupplierRequest }>({
-      query: ({ id, data }) => ({ url: endpoints.suppliers.reactivate(id), method: 'PATCH', data }),
+    reactivateSupplier: builder.mutation<void, { id: string }>({
+      query: ({ id }) => ({ url: endpoints.suppliers.reactivate(id), method: 'PATCH' }),
       invalidatesTags: ['Supplier'],
     }),
     getSupplierScorecard: builder.query<SupplierScorecard, { id: string; params?: SupplierScorecardParams }>({
@@ -57,7 +53,6 @@ export const {
   useApproveSupplierMutation,
   useRejectSupplierMutation,
   useSuspendSupplierMutation,
-  useDeactivateSupplierMutation,
   useReactivateSupplierMutation,
   useGetSupplierScorecardQuery,
 } = suppliersApi;

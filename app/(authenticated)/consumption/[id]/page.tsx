@@ -105,8 +105,9 @@ export default function ConsumptionDetailPage() {
     try {
       await submitConsumption(id).unwrap();
       toast.success('Consumption submitted for confirmation');
-    } catch {
+    } catch (err) {
       toast.error('Failed to submit consumption');
+      throw err;
     }
   };
 

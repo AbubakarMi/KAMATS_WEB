@@ -15,7 +15,7 @@ import {
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { useCreateDosageConfigMutation } from '@/lib/features/dosage/dosageApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
 import type { CreateDosageConfigRequest } from '@/lib/api/types/consumption';
@@ -24,7 +24,7 @@ type FormValues = CreateDosageConfigRequest;
 
 export default function CreateDosageConfigPage() {
   const router = useRouter();
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [createConfig, { isLoading: creating }] = useCreateDosageConfigMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
@@ -48,6 +48,7 @@ export default function CreateDosageConfigPage() {
     } catch (err) {
       const fallback = setApiFieldErrors(form.setError, err);
       if (fallback) toast.error(fallback);
+      throw err;
     }
   };
 

@@ -16,7 +16,8 @@ import {
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { useCreateStockCountMutation } from '@/lib/features/stockCount/stockCountApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
+import { useGetAllUsersQuery } from '@/lib/features/users/usersApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
 import { createStockCountSchema } from '@/lib/schemas';
@@ -35,13 +36,18 @@ type FormValues = {
 
 export default function CreateStockCountPage() {
   const router = useRouter();
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
+  const { data: users } = useGetAllUsersQuery({ isActive: true });
   const [createCount, { isLoading: creating }] = useCreateStockCountMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const form = useForm<FormValues>({ resolver: zodResolver(createStockCountSchema) as any, mode: 'onBlur' });
+  const form = useForm<FormValues>({
+    resolver: zodResolver(createStockCountSchema) as any,
+    mode: 'onBlur',
+    defaultValues: { countType: '', storeId: '', assignedTo: '', scheduledDate: '' },
+  });
 
   const onSubmit = (values: FormValues) => {
     setPendingValues(values);
@@ -64,6 +70,7 @@ export default function CreateStockCountPage() {
     } catch (err) {
       const fallback = setApiFieldErrors(form.setError, err);
       if (fallback) toast.error(fallback);
+      throw err;
     }
   };
 
@@ -121,8 +128,23 @@ export default function CreateStockCountPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Assigned To (User ID)</Label>
-              <Input placeholder="User ID" {...form.register('assignedTo')} />
+              <Label>Assigned To</Label>
+              <Controller
+                control={form.control}
+                name="assignedTo"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger><SelectValue placeholder="Select user" /></SelectTrigger>
+                    <SelectContent>
+                      {(users ?? []).map((u) => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.firstName} {u.lastName} — {u.roles.map((r) => r.name).join(', ')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {form.formState.errors.assignedTo && (
                 <p className="text-xs text-red-500 mt-1">{form.formState.errors.assignedTo.message}</p>
               )}

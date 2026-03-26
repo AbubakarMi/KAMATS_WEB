@@ -6,6 +6,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const lotsApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getLots: builder.query<PaginatedResponse<Lot>, LotListParams>({
       query: (params) => ({ url: endpoints.lots.list, params }),

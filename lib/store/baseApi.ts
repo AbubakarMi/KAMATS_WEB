@@ -37,11 +37,21 @@ const axiosBaseQuery: BaseQueryFn<AxiosBaseQueryArgs, unknown, ApiError> = async
     return { data: body?.data ?? body };
   } catch (axiosError) {
     const err = axiosError as AxiosError<ApiError>;
+
+    // Server returned an error response (4xx/5xx) — use its body
+    if (err.response?.data) {
+      return { error: err.response.data };
+    }
+
+    // No response received — timeout or network failure
+    const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
     return {
-      error: err.response?.data ?? {
-        status: err.response?.status ?? 500,
-        code: 'NETWORK_ERROR',
-        message: err.message,
+      error: {
+        status: isTimeout ? 408 : 500,
+        code: isTimeout ? 'REQUEST_TIMEOUT' : 'NETWORK_ERROR',
+        message: isTimeout
+          ? 'The server took too long to respond. Please try again.'
+          : 'Unable to reach the server. Check your connection.',
         traceId: '',
       },
     };

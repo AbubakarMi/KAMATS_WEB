@@ -9,6 +9,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const receiptApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getReceiptList: builder.query<PaginatedResponse<ReceiptSession>, ReceiptListParams>({
       query: (params) => ({ url: endpoints.receipt.list, params }),

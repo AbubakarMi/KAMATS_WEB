@@ -4,6 +4,7 @@ import type { AuditEvent, AuditEventListParams, VerifyChainResponse } from '@/li
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const auditApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getAuditEvents: builder.query<PaginatedResponse<AuditEvent>, AuditEventListParams>({
       query: (params) => ({ url: endpoints.audit.events, params }),

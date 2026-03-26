@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
@@ -9,9 +10,16 @@ import { DocumentLink } from '@/components/data-display/DocumentLink';
 import { DescriptionList } from '@/components/data-display/DescriptionList';
 import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
+import { ApprovalActions } from '@/components/forms/ApprovalActions';
 import { DownloadPdfButton } from '@/components/DownloadPdfButton';
 import { generateWeighbridgePdf } from '@/lib/utils/pdfGenerators';
-import { useGetWeighbridgeTicketQuery } from '@/lib/features/weighbridge/weighbridgeApi';
+import { useCanPerformAction } from '@/lib/hooks';
+import { Permissions as P } from '@/lib/utils/permissions';
+import {
+  useGetWeighbridgeTicketQuery,
+  useOverrideWeighbridgeMutation,
+  useRejectWeighbridgeMutation,
+} from '@/lib/features/weighbridge/weighbridgeApi';
 import { formatWeight, formatPercentage, formatDateTime } from '@/lib/utils/formatters';
 
 export default function WeighbridgeDetailPage() {
@@ -19,6 +27,24 @@ export default function WeighbridgeDetailPage() {
   const router = useRouter();
 
   const { data: ticket, isLoading, isError, error, refetch } = useGetWeighbridgeTicketQuery(id);
+  const [overrideWeighbridge] = useOverrideWeighbridgeMutation();
+  const [rejectWeighbridge] = useRejectWeighbridgeMutation();
+
+  const { canPerform: canOverride } = useCanPerformAction(P.WEIGHBRIDGE_OVERRIDE, ticket?.operatorId);
+
+  const handleOverride = async (notes?: string) => {
+    try {
+      await overrideWeighbridge({ id, data: { overrideReason: notes ?? '' } }).unwrap();
+      toast.success('Weighbridge ticket overridden');
+    } catch { toast.error('Failed to override ticket'); }
+  };
+
+  const handleReject = async (reason: string) => {
+    try {
+      await rejectWeighbridge({ id, data: { rejectionReason: reason } }).unwrap();
+      toast.success('Weighbridge ticket rejected');
+    } catch { toast.error('Failed to reject ticket'); }
+  };
 
   if (isError) return <QueryErrorAlert error={error} />;
   if (isLoading || !ticket) return <DetailPageSkeleton hasKpiCards kpiCount={3} descriptionRows={6} />;
@@ -79,7 +105,18 @@ export default function WeighbridgeDetailPage() {
           </h1>
           <StatusBadge status={ticket.status} />
         </div>
-        <DownloadPdfButton onGenerate={() => generateWeighbridgePdf(ticket)} />
+        <div className="flex flex-wrap items-center gap-2">
+          <DownloadPdfButton onGenerate={() => generateWeighbridgePdf(ticket)} />
+          {ticket.status === 'Flagged' && canOverride && (
+            <ApprovalActions
+              onApprove={handleOverride}
+              onReject={handleReject}
+              approveLabel="Override"
+              rejectLabel="Reject"
+              requireApprovalNotes
+            />
+          )}
+        </div>
       </div>
 
       <div className="rounded-[14px] border border-slate-200 bg-white p-6 mb-4">

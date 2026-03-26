@@ -38,34 +38,37 @@ export const endpoints = {
     approve: (id: string) => `/suppliers/${id}/approve`,
     reject: (id: string) => `/suppliers/${id}/reject`,
     suspend: (id: string) => `/suppliers/${id}/suspend`,
-    deactivate: (id: string) => `/suppliers/${id}/deactivate`,
     reactivate: (id: string) => `/suppliers/${id}/reactivate`,
     scorecard: (id: string) => `/suppliers/${id}/scorecard`,
   },
 
-  // === M2 Purchase Requisitions (6) ===
+  // === M2 Purchase Requisitions (8) ===
   pr: {
     list: '/purchase-requisitions',
     detail: (id: string) => `/purchase-requisitions/${id}`,
+    update: (id: string) => `/purchase-requisitions/${id}`,
     submit: (id: string) => `/purchase-requisitions/${id}/submit`,
-    approve: (id: string) => `/purchase-requisitions/${id}/approve`,
-    reject: (id: string) => `/purchase-requisitions/${id}/reject`,
+    approveFinance: (id: string) => `/purchase-requisitions/${id}/approve-finance`,
+    rejectFinance: (id: string) => `/purchase-requisitions/${id}/reject-finance`,
+    approveDirector: (id: string) => `/purchase-requisitions/${id}/approve-director`,
+    rejectDirector: (id: string) => `/purchase-requisitions/${id}/reject-director`,
   },
 
   // === M3 Purchase Orders (11) ===
   po: {
     list: '/purchase-orders',
     detail: (id: string) => `/purchase-orders/${id}`,
+    update: (id: string) => `/purchase-orders/${id}`,
     submit: (id: string) => `/purchase-orders/${id}/submit`,
-    approveManager: (id: string) => `/purchase-orders/${id}/approve-manager`,
-    rejectManager: (id: string) => `/purchase-orders/${id}/reject-manager`,
     approveFinance: (id: string) => `/purchase-orders/${id}/approve-finance`,
     rejectFinance: (id: string) => `/purchase-orders/${id}/reject-finance`,
+    approveDirector: (id: string) => `/purchase-orders/${id}/approve-director`,
+    rejectDirector: (id: string) => `/purchase-orders/${id}/reject-director`,
     amendments: (id: string) => `/purchase-orders/${id}/amendments`,
-    approveAmendmentManager: (id: string, aId: string) =>
-      `/purchase-orders/${id}/amendments/${aId}/approve-manager`,
     approveAmendmentFinance: (id: string, aId: string) =>
       `/purchase-orders/${id}/amendments/${aId}/approve-finance`,
+    approveAmendmentDirector: (id: string, aId: string) =>
+      `/purchase-orders/${id}/amendments/${aId}/approve-director`,
   },
 
   // === M4 Quality (7) ===
@@ -233,6 +236,18 @@ export const endpoints = {
     verifyChain: '/audit/verify-chain',
     verifyChainStore: (storeId: string) => `/audit/verify-chain/${storeId}`,
     export: '/audit/export',
+  },
+
+  // === Stores (read-only, all authenticated users) ===
+  stores: {
+    list: '/stores',
+    detail: (id: string) => `/stores/${id}`,
+  },
+
+  // === Users (read-only, all authenticated users) ===
+  users: {
+    list: '/users',
+    detail: (id: string) => `/users/${id}`,
   },
 
   // === Cross-Cutting: Search (1) ===

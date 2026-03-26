@@ -51,10 +51,10 @@ export default function Sidebar({ collapsed, onCollapse, isMobile, drawerOpen, o
     if (hasPermission([Permissions.SUPPLIERS_CREATE, Permissions.SUPPLIERS_READ, Permissions.SUPPLIERS_APPROVE])) {
       procurementChildren.push({ key: '/suppliers', icon: <Store size={18} />, label: 'Suppliers' });
     }
-    if (hasPermission([Permissions.PR_CREATE, Permissions.PR_READ, Permissions.PR_APPROVE])) {
+    if (hasPermission([Permissions.PR_CREATE, Permissions.PR_READ, Permissions.PR_APPROVE_FINANCE, Permissions.PR_APPROVE_DIRECTOR])) {
       procurementChildren.push({ key: '/purchase-requisitions', icon: <FileText size={18} />, label: 'Requisitions' });
     }
-    if (hasPermission([Permissions.PO_CREATE, Permissions.PO_READ, Permissions.PO_APPROVE_MANAGER, Permissions.PO_APPROVE_FINANCE])) {
+    if (hasPermission([Permissions.PO_CREATE, Permissions.PO_READ, Permissions.PO_APPROVE_FINANCE, Permissions.PO_APPROVE_DIRECTOR])) {
       procurementChildren.push({ key: '/purchase-orders', icon: <ShoppingCart size={18} />, label: 'Purchase Orders' });
     }
     if (procurementChildren.length > 0) {

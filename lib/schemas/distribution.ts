@@ -7,7 +7,7 @@ export const createSTOSchema = z.object({
     .number()
     .min(1, 'Must request at least 1 bag')
     .max(100000, 'Must not exceed 100,000 bags'),
-  requestedDeliveryDate: z
+  requestedDelivery: z
     .string()
     .min(1, 'Delivery date is required'),
   justification: z

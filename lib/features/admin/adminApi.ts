@@ -11,6 +11,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const adminApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // === Users ===
     getUsers: builder.query<PaginatedResponse<User>, UserListParams>({
@@ -49,6 +50,8 @@ export const adminApi = baseApi.injectEndpoints({
     // === Stores ===
     getStores: builder.query<Store[], StoreListParams | void>({
       query: (params) => ({ url: endpoints.admin.stores, params: params || undefined }),
+      transformResponse: (response: Store[] | { data: Store[] }) =>
+        Array.isArray(response) ? response : response?.data ?? [],
       providesTags: ['Store'],
     }),
     createStore: builder.mutation<Store, CreateStoreRequest>({
@@ -63,6 +66,8 @@ export const adminApi = baseApi.injectEndpoints({
     // === Configuration ===
     getConfiguration: builder.query<ConfigItem[], void>({
       query: () => ({ url: endpoints.admin.configuration }),
+      transformResponse: (response: ConfigItem[] | { data: ConfigItem[] }) =>
+        Array.isArray(response) ? response : response?.data ?? [],
       providesTags: ['Config'],
     }),
     updateConfig: builder.mutation<ConfigItem, { key: string; data: UpdateConfigRequest }>({
@@ -73,6 +78,8 @@ export const adminApi = baseApi.injectEndpoints({
     // === Devices ===
     getDevices: builder.query<Device[], DeviceListParams | void>({
       query: (params) => ({ url: endpoints.admin.devices, params: params || undefined }),
+      transformResponse: (response: Device[] | { data: Device[] }) =>
+        Array.isArray(response) ? response : response?.data ?? [],
       providesTags: ['Device'],
     }),
     registerDevice: builder.mutation<Device, RegisterDeviceRequest>({

@@ -6,6 +6,7 @@ import type {
 } from '@/lib/api/types/inventory';
 
 export const itemsApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getItem: builder.query<Item, string>({
       query: (id) => ({ url: endpoints.items.detail(id) }),

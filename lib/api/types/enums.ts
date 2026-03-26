@@ -20,6 +20,8 @@ export type SupplierStatus = (typeof SupplierStatus)[keyof typeof SupplierStatus
 export const PRStatus = {
   Draft: 'Draft',
   Submitted: 'Submitted',
+  FinanceApproved: 'FinanceApproved',
+  FinanceRejected: 'FinanceRejected',
   Approved: 'Approved',
   Rejected: 'Rejected',
   ConvertedToPO: 'ConvertedToPO',
@@ -36,14 +38,14 @@ export type PRTrigger = (typeof PRTrigger)[keyof typeof PRTrigger];
 export const POStatus = {
   Draft: 'Draft',
   Submitted: 'Submitted',
-  ManagerApproved: 'ManagerApproved',
+  FinanceApproved: 'FinanceApproved',
   Issued: 'Issued',
   AwaitingDelivery: 'AwaitingDelivery',
   PartiallyReceived: 'PartiallyReceived',
   FullyReceived: 'FullyReceived',
   Closed: 'Closed',
-  ManagerRejected: 'ManagerRejected',
   FinanceRejected: 'FinanceRejected',
+  DirectorRejected: 'DirectorRejected',
   AmendmentPending: 'AmendmentPending',
   Cancelled: 'Cancelled',
 } as const;
@@ -273,8 +275,8 @@ export const VarianceSeverity = {
 export type VarianceSeverity = (typeof VarianceSeverity)[keyof typeof VarianceSeverity];
 
 export const AmendmentStatus = {
-  PendingManagerApproval: 'PendingManagerApproval',
   PendingFinanceApproval: 'PendingFinanceApproval',
+  PendingDirectorApproval: 'PendingDirectorApproval',
   Applied: 'Applied',
   Rejected: 'Rejected',
 } as const;

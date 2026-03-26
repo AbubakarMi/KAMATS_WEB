@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,19 +15,19 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
+import { DetailPageSkeleton } from '@/components/skeletons/DetailPageSkeleton';
 
-import { useGetPRsQuery, useGetPRQuery } from '@/lib/features/procurement/prApi';
-import { useCreatePOMutation } from '@/lib/features/procurement/poApi';
+import { useGetPOQuery, useUpdatePOMutation } from '@/lib/features/procurement/poApi';
 import { useGetSuppliersQuery } from '@/lib/features/suppliers/suppliersApi';
 import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
-import { formatMoney, formatNumber } from '@/lib/utils/formatters';
-import { createPOSchema } from '@/lib/schemas';
-import type { CreatePORequest } from '@/lib/api/types/procurement';
+import { formatMoney } from '@/lib/utils/formatters';
+import { updatePOSchema } from '@/lib/schemas';
+import type { UpdatePORequest } from '@/lib/api/types/procurement';
 
 type FormValues = {
-  prId: string;
   supplierId: string;
   destinationStoreId: string;
   expectedDeliveryDate: string;
@@ -41,68 +41,56 @@ type FormValues = {
   }[];
 };
 
-function CreatePOForm() {
+export default function EditPOPage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const prIdFromUrl = searchParams.get('prId');
-
-  const { data: prsData } = useGetPRsQuery({ status: 'Approved', page: 1, pageSize: 200 });
-  const { data: selectedPR } = useGetPRQuery(prIdFromUrl!, { skip: !prIdFromUrl });
+  const { data: po, isLoading, isError, error } = useGetPOQuery(id);
   const { data: suppliersData } = useGetSuppliersQuery({ page: 1, pageSize: 200 });
   const { data: stores } = useGetAllStoresQuery();
-  const [createPO, { isLoading: creating }] = useCreatePOMutation();
+  const [updatePO, { isLoading: updating }] = useUpdatePOMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
 
-  const approvedPRs = (prsData?.data ?? []).filter((pr) => !pr.linkedPoId);
   const activeSuppliers = (suppliersData?.data ?? []).filter((s) => s.status === 'Active');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form = useForm<FormValues>({
-    resolver: zodResolver(createPOSchema) as any,
+    resolver: zodResolver(updatePOSchema) as any,
     mode: 'onBlur',
     defaultValues: {
-      prId: '',
       supplierId: '',
       destinationStoreId: '',
       expectedDeliveryDate: '',
       currency: 'NGN',
       notes: '',
-      lines: [
-        {
-          productSpecification: 'Aluminium Sulphate — Grade A, 50kg bags',
-          quantityBags: 0,
-          standardWeightKg: 50,
-          unitPrice: 0,
-        },
-      ],
+      lines: [{ productSpecification: '', quantityBags: 0, standardWeightKg: 50, unitPrice: 0 }],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'lines',
-  });
+  const { fields, append, remove } = useFieldArray({ control: form.control, name: 'lines' });
 
-  // Auto-fill from PR when arriving via "Convert to PO"
   useEffect(() => {
-    if (selectedPR && prIdFromUrl) {
-      form.setValue('prId', selectedPR.id);
-      form.setValue('destinationStoreId', selectedPR.storeId);
-      form.setValue('expectedDeliveryDate', selectedPR.requestedDeliveryDate);
-      form.setValue('lines.0.quantityBags', selectedPR.requestedQuantity);
+    if (po) {
+      if (po.status !== 'Draft') {
+        toast.error('Only draft POs can be edited');
+        router.replace(`/purchase-orders/${id}`);
+        return;
+      }
+      form.reset({
+        supplierId: po.supplierId,
+        destinationStoreId: po.destinationStoreId,
+        expectedDeliveryDate: po.expectedDeliveryDate?.split('T')[0] ?? '',
+        currency: po.currency,
+        notes: '',
+        lines: po.lines.map((l) => ({
+          productSpecification: l.productSpecification,
+          quantityBags: l.quantityBags,
+          standardWeightKg: Number(l.standardWeightKg),
+          unitPrice: Number(l.unitPrice),
+        })),
+      });
     }
-  }, [selectedPR, prIdFromUrl, form]);
-
-  const handlePRChange = (prId: string) => {
-    form.setValue('prId', prId);
-    const pr = approvedPRs.find((p) => p.id === prId);
-    if (pr) {
-      form.setValue('destinationStoreId', pr.storeId);
-      form.setValue('expectedDeliveryDate', pr.requestedDeliveryDate);
-      form.setValue('lines.0.quantityBags', pr.requestedQuantity);
-    }
-  };
+  }, [po, id, router, form]);
 
   const onSubmit = (values: FormValues) => {
     setPendingValues(values);
@@ -120,8 +108,7 @@ function CreatePOForm() {
         standardWeightKg: String(line.standardWeightKg),
         unitPrice: String(line.unitPrice),
       }));
-      const req: CreatePORequest = {
-        prId: sanitized.prId as string,
+      const req: UpdatePORequest = {
         supplierId: sanitized.supplierId as string,
         destinationStoreId: sanitized.destinationStoreId as string,
         expectedDeliveryDate: sanitized.expectedDeliveryDate as string,
@@ -129,9 +116,9 @@ function CreatePOForm() {
         notes: sanitized.notes as string | undefined,
         lines,
       };
-      await createPO(req).unwrap();
-      toast.success('Purchase Order created');
-      router.push('/purchase-orders');
+      await updatePO({ id, data: req }).unwrap();
+      toast.success('Purchase Order updated');
+      router.push(`/purchase-orders/${id}`);
     } catch (err) {
       const fallback = setApiFieldErrors(form.setError, err);
       if (fallback) toast.error(fallback);
@@ -141,50 +128,27 @@ function CreatePOForm() {
 
   const watchedLines = form.watch('lines');
 
+  if (isError) return <QueryErrorAlert error={error} />;
+  if (isLoading || !po) return <DetailPageSkeleton descriptionRows={6} />;
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="outline" size="sm" onClick={() => router.push('/purchase-orders')}>
+        <Button variant="outline" size="sm" onClick={() => router.push(`/purchase-orders/${id}`)}>
           <ArrowLeft className="h-4 w-4 mr-1" />Back
         </Button>
         <h1 className="text-2xl font-bold font-[family-name:var(--font-display)] text-slate-900">
-          Create Purchase Order
+          Edit {po.poNumber}
         </h1>
       </div>
 
       <div className="rounded-[14px] border border-slate-200 bg-white p-6">
+        <div className="mb-4 text-sm text-slate-500">
+          Linked PR: <span className="font-medium text-slate-700">{po.prNumber}</span>
+        </div>
+
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Purchase Requisition */}
-            <div>
-              <Label>Purchase Requisition</Label>
-              <Controller
-                control={form.control}
-                name="prId"
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={prIdFromUrl ? undefined : handlePRChange}
-                    disabled={!!prIdFromUrl}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select approved PR" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {approvedPRs.map((pr) => (
-                        <SelectItem key={pr.id} value={pr.id}>
-                          {pr.prNumber} — {pr.storeName} ({formatNumber(pr.requestedQuantity)} bags)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {form.formState.errors.prId && (
-                <p className="text-xs text-red-500 mt-1">{form.formState.errors.prId.message}</p>
-              )}
-            </div>
-
             {/* Supplier */}
             <div>
               <Label>Supplier</Label>
@@ -193,9 +157,7 @@ function CreatePOForm() {
                 name="supplierId"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select supplier" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select supplier" /></SelectTrigger>
                     <SelectContent>
                       {activeSuppliers.map((s) => (
                         <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
@@ -217,9 +179,7 @@ function CreatePOForm() {
                 name="destinationStoreId"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select store" />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select store" /></SelectTrigger>
                     <SelectContent>
                       {(stores ?? []).map((s) => (
                         <SelectItem key={s.id} value={s.id}>{s.code} — {s.name}</SelectItem>
@@ -256,9 +216,6 @@ function CreatePOForm() {
           <div>
             <Label>Notes (optional)</Label>
             <Textarea rows={3} {...form.register('notes')} />
-            {form.formState.errors.notes && (
-              <p className="text-xs text-red-500 mt-1">{form.formState.errors.notes.message}</p>
-            )}
           </div>
 
           {/* PO Lines */}
@@ -269,14 +226,7 @@ function CreatePOForm() {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  append({
-                    productSpecification: 'Aluminium Sulphate — Grade A, 50kg bags',
-                    quantityBags: 0,
-                    standardWeightKg: 50,
-                    unitPrice: 0,
-                  })
-                }
+                onClick={() => append({ productSpecification: 'Aluminium Sulphate — Grade A, 50kg bags', quantityBags: 0, standardWeightKg: 50, unitPrice: 0 })}
               >
                 <Plus className="h-4 w-4 mr-1" />Add Line
               </Button>
@@ -292,20 +242,11 @@ function CreatePOForm() {
               const lineTotal = qty * price;
 
               return (
-                <div
-                  key={field.id}
-                  className="rounded-lg border border-slate-200 p-4 space-y-3"
-                >
+                <div key={field.id} className="rounded-lg border border-slate-200 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-slate-600">Line {index + 1}</span>
                     {fields.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => remove(index)}
-                      >
+                      <Button type="button" variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => remove(index)}>
                         <Trash2 className="h-4 w-4 mr-1" />Remove
                       </Button>
                     )}
@@ -315,51 +256,30 @@ function CreatePOForm() {
                     <Label>Product Specification</Label>
                     <Input {...form.register(`lines.${index}.productSpecification`)} />
                     {form.formState.errors.lines?.[index]?.productSpecification && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {form.formState.errors.lines[index].productSpecification.message}
-                      </p>
+                      <p className="text-xs text-red-500 mt-1">{form.formState.errors.lines[index].productSpecification.message}</p>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label>Quantity (bags)</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        {...form.register(`lines.${index}.quantityBags`)}
-                      />
+                      <Input type="number" min={1} {...form.register(`lines.${index}.quantityBags`)} />
                       {form.formState.errors.lines?.[index]?.quantityBags && (
-                        <p className="text-xs text-red-500 mt-1">
-                          {form.formState.errors.lines[index].quantityBags.message}
-                        </p>
+                        <p className="text-xs text-red-500 mt-1">{form.formState.errors.lines[index].quantityBags.message}</p>
                       )}
                     </div>
                     <div>
                       <Label>Standard Weight (kg)</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        {...form.register(`lines.${index}.standardWeightKg`)}
-                      />
+                      <Input type="number" min={1} {...form.register(`lines.${index}.standardWeightKg`)} />
                       {form.formState.errors.lines?.[index]?.standardWeightKg && (
-                        <p className="text-xs text-red-500 mt-1">
-                          {form.formState.errors.lines[index].standardWeightKg.message}
-                        </p>
+                        <p className="text-xs text-red-500 mt-1">{form.formState.errors.lines[index].standardWeightKg.message}</p>
                       )}
                     </div>
                     <div>
                       <Label>Unit Price</Label>
-                      <Input
-                        type="number"
-                        min={0.01}
-                        step="0.01"
-                        {...form.register(`lines.${index}.unitPrice`)}
-                      />
+                      <Input type="number" min={0.01} step="0.01" {...form.register(`lines.${index}.unitPrice`)} />
                       {form.formState.errors.lines?.[index]?.unitPrice && (
-                        <p className="text-xs text-red-500 mt-1">
-                          {form.formState.errors.lines[index].unitPrice.message}
-                        </p>
+                        <p className="text-xs text-red-500 mt-1">{form.formState.errors.lines[index].unitPrice.message}</p>
                       )}
                     </div>
                   </div>
@@ -374,20 +294,11 @@ function CreatePOForm() {
 
           {/* Footer */}
           <div className="border-t border-slate-200 pt-4 flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
-              onClick={() => router.push('/purchase-orders')}
-            >
+            <Button type="button" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => router.push(`/purchase-orders/${id}`)}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={creating}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              {creating ? 'Creating...' : 'Create PO'}
+            <Button type="submit" disabled={updating} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              {updating ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </form>
@@ -396,19 +307,11 @@ function CreatePOForm() {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Create Purchase Order?"
-        description="Are you sure you want to create this purchase order?"
-        confirmLabel="Create PO"
+        title="Update Purchase Order?"
+        description="Are you sure you want to save these changes?"
+        confirmLabel="Save Changes"
         onConfirm={handleConfirm}
       />
     </div>
-  );
-}
-
-export default function CreatePOPage() {
-  return (
-    <Suspense>
-      <CreatePOForm />
-    </Suspense>
   );
 }

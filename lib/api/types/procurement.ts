@@ -20,10 +20,14 @@ export interface PR {
   raisedBy: UUID;
   raisedByName: string;
   raisedAt: Timestamp;
-  approvedBy: UUID | null;
-  approvedByName: string | null;
-  approvedAt: Timestamp | null;
-  rejectionReason: string | null;
+  financeApprovedBy: UUID | null;
+  financeApprovedByName: string | null;
+  financeApprovedAt: Timestamp | null;
+  financeRejectionReason: string | null;
+  directorApprovedBy: UUID | null;
+  directorApprovedByName: string | null;
+  directorApprovedAt: Timestamp | null;
+  directorRejectionReason: string | null;
   expiresAt: Timestamp | null;
   linkedPoId: UUID | null;
   linkedPoNumber: string | null;
@@ -38,6 +42,13 @@ export interface PRListParams extends PaginationParams, DateRangeParams {
 
 export interface CreatePRRequest {
   storeId: UUID;
+  requestedQuantity: number;
+  requestedWeightKg: string;
+  justification: string;
+  requestedDeliveryDate: string;
+}
+
+export interface UpdatePRRequest {
   requestedQuantity: number;
   requestedWeightKg: string;
   justification: string;
@@ -74,10 +85,10 @@ export interface POAmendment {
   status: AmendmentStatus;
   requestedBy: UUID;
   requestedAt: Timestamp;
-  managerApprovedBy: UUID | null;
-  managerApprovedAt: Timestamp | null;
   financeApprovedBy: UUID | null;
   financeApprovedAt: Timestamp | null;
+  directorApprovedBy: UUID | null;
+  directorApprovedAt: Timestamp | null;
 }
 
 export interface PO {
@@ -98,14 +109,14 @@ export interface PO {
   requestedBy: UUID;
   requestedByName: string;
   requestedAt: Timestamp;
-  managerApprovedBy: UUID | null;
-  managerApprovedByName: string | null;
-  managerApprovedAt: Timestamp | null;
-  managerRejectionReason: string | null;
   financeApprovedBy: UUID | null;
   financeApprovedByName: string | null;
   financeApprovedAt: Timestamp | null;
   financeRejectionReason: string | null;
+  directorApprovedBy: UUID | null;
+  directorApprovedByName: string | null;
+  directorApprovedAt: Timestamp | null;
+  directorRejectionReason: string | null;
   issuedAt: Timestamp | null;
   createdAt: Timestamp;
 }
@@ -133,12 +144,13 @@ export interface CreatePORequest {
   lines: CreatePOLine[];
 }
 
-export interface ApproveManagerRequest {
+export interface UpdatePORequest {
+  supplierId: UUID;
+  destinationStoreId: UUID;
+  expectedDeliveryDate: string;
+  currency: string;
   notes?: string;
-}
-
-export interface RejectManagerRequest {
-  rejectionReason: string;
+  lines: CreatePOLine[];
 }
 
 export interface ApproveFinanceRequest {
@@ -146,6 +158,14 @@ export interface ApproveFinanceRequest {
 }
 
 export interface RejectFinanceRequest {
+  rejectionReason: string;
+}
+
+export interface ApproveDirectorRequest {
+  notes?: string;
+}
+
+export interface RejectDirectorRequest {
   rejectionReason: string;
 }
 

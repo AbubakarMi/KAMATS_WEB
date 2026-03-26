@@ -15,6 +15,7 @@ import type {
 import type { LossSummary, LossSummaryParams } from '@/lib/api/types/loss';
 
 export const reportsApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getStockSummary: builder.query<StockSummaryReport, StockSummaryParams | void>({
       query: (params) => ({ url: endpoints.reports.stockSummary, params: params ?? undefined }),

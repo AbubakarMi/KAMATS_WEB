@@ -16,7 +16,7 @@ import {
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { useCreateConsumptionMutation } from '@/lib/features/consumption/consumptionApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { createConsumptionSchema } from '@/lib/schemas/consumption';
 import { setApiFieldErrors } from '@/lib/utils/formErrors';
 import { sanitizeFormValues } from '@/lib/utils/sanitize';
@@ -31,7 +31,7 @@ type FormValues = {
 
 export default function CreateConsumptionPage() {
   const router = useRouter();
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const [createConsumption, { isLoading: creating }] = useCreateConsumptionMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
@@ -74,6 +74,7 @@ export default function CreateConsumptionPage() {
     } catch (err) {
       const fallback = setApiFieldErrors(form.setError, err);
       if (fallback) toast.error(fallback);
+      throw err;
     }
   };
 

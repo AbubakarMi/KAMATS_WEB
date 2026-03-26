@@ -13,7 +13,7 @@ import { QueryErrorAlert } from '@/components/errors/QueryErrorAlert';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
 import { usePagination } from '@/lib/hooks';
 import { useGetLotsQuery } from '@/lib/features/inventory/lotsApi';
-import { useGetStoresQuery } from '@/lib/features/admin/adminApi';
+import { useGetAllStoresQuery } from '@/lib/features/stores/storesApi';
 import { formatNumber, formatDate } from '@/lib/utils/formatters';
 import { LotStatus } from '@/lib/api/types/enums';
 import type { Lot } from '@/lib/api/types/inventory';
@@ -81,7 +81,7 @@ export default function LotsListPage() {
     storeId: storeFilter !== 'all' ? storeFilter : undefined,
   });
 
-  const { data: stores } = useGetStoresQuery();
+  const { data: stores } = useGetAllStoresQuery();
   const lots = data?.data ?? [];
   const pagination = data?.pagination;
 

@@ -9,17 +9,20 @@ export const rolePermissions: Record<string, string[]> = {
 
   'Procurement Officer': [
     P.SUPPLIERS_CREATE, P.SUPPLIERS_READ,
-    P.PR_CREATE, P.PR_READ,
-    P.PO_CREATE, P.PO_READ,
   ],
 
   'Procurement Manager': [
     P.SUPPLIERS_READ, P.SUPPLIERS_APPROVE,
-    P.PR_READ, P.PR_APPROVE,
-    P.PO_READ, P.PO_APPROVE_MANAGER,
+  ],
+
+  Director: [
+    P.PR_READ, P.PR_APPROVE_DIRECTOR,
+    P.PO_READ, P.PO_APPROVE_DIRECTOR,
+    P.REPORTS_VIEW,
   ],
 
   'Finance Officer': [
+    P.PR_READ, P.PR_APPROVE_FINANCE,
     P.PO_READ, P.PO_APPROVE_FINANCE,
     P.REPORTS_VIEW,
   ],
@@ -34,6 +37,8 @@ export const rolePermissions: Record<string, string[]> = {
   ],
 
   'Central Store Keeper': [
+    P.PR_CREATE, P.PR_READ,
+    P.PO_CREATE, P.PO_READ,
     P.GRN_CREATE, P.GRN_READ,
     P.LOTS_READ, P.LABELS_PRINT,
     P.ITEMS_READ, P.ITEMS_LABEL, P.ITEMS_PUTAWAY,
@@ -46,6 +51,8 @@ export const rolePermissions: Record<string, string[]> = {
   ],
 
   'Unit Store Keeper': [
+    P.PR_CREATE, P.PR_READ,
+    P.PO_CREATE, P.PO_READ,
     P.LOTS_READ, P.ITEMS_READ,
     P.LOCATIONS_READ,
     P.LEDGER_READ,

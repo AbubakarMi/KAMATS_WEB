@@ -9,6 +9,7 @@ import type {
 import type { PaginatedResponse } from '@/lib/api/types/common';
 
 export const consumptionApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     createConsumption: builder.mutation<ConsumptionEntry, CreateConsumptionRequest>({
       query: (body) => ({ url: endpoints.consumption.list, method: 'POST', data: body }),

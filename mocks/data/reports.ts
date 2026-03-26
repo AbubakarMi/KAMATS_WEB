@@ -173,7 +173,7 @@ export const mockProcurementPipeline: ProcurementPipelineReport = {
     { type: 'PR', referenceNumber: 'PR-2026-0013', status: 'Submitted', storeName: 'Tamburawa WTP Unit Store', quantityBags: 80, expectedDate: '2026-04-05', daysInStatus: 2, assignedTo: 'Amina Yusuf' },
     { type: 'PR', referenceNumber: 'PR-2026-0014', status: 'Approved', storeName: 'Central Store — Main', quantityBags: 200, expectedDate: '2026-04-10', daysInStatus: 1, assignedTo: null },
     { type: 'PO', referenceNumber: 'PO-2026-0005', status: 'Submitted', storeName: 'Central Store — Main', quantityBags: 150, expectedDate: '2026-04-08', daysInStatus: 5, assignedTo: 'Manager Review' },
-    { type: 'PO', referenceNumber: 'PO-2026-0006', status: 'ManagerApproved', storeName: 'Central Store — Main', quantityBags: 200, expectedDate: '2026-04-15', daysInStatus: 2, assignedTo: 'Finance Review' },
+    { type: 'PO', referenceNumber: 'PO-2026-0006', status: 'FinanceApproved', storeName: 'Central Store — Main', quantityBags: 200, expectedDate: '2026-04-15', daysInStatus: 2, assignedTo: 'Director Review' },
     { type: 'PO', referenceNumber: 'PO-2026-0003', status: 'Issued', storeName: 'Central Store — Main', quantityBags: 300, expectedDate: '2026-03-28', daysInStatus: 8, assignedTo: 'Chemtrade Nigeria Ltd' },
   ],
 };
