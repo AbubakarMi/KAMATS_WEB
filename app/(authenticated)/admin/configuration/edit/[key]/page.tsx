@@ -48,6 +48,7 @@ export default function EditConfigPage() {
       } else {
         toast.error('Failed to update configuration');
       }
+      throw err;
     }
   };
 

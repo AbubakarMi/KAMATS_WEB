@@ -10,13 +10,14 @@ export const Permissions = {
   // Purchase Requisition
   PR_CREATE: 'pr:create',
   PR_READ: 'pr:read',
-  PR_APPROVE: 'pr:approve',
+  PR_APPROVE_FINANCE: 'pr:approve:finance',
+  PR_APPROVE_DIRECTOR: 'pr:approve:director',
 
   // Purchase Order
   PO_CREATE: 'po:create',
   PO_READ: 'po:read',
-  PO_APPROVE_MANAGER: 'po:approve:manager',
   PO_APPROVE_FINANCE: 'po:approve:finance',
+  PO_APPROVE_DIRECTOR: 'po:approve:director',
 
   // Quality & Gate
   DVR_CREATE: 'dvr:create',

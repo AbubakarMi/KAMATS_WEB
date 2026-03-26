@@ -5,7 +5,7 @@ import { Permissions as P } from '@/lib/utils/permissions';
 
 export default function PRLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PermissionGuard required={[P.PR_CREATE, P.PR_READ, P.PR_APPROVE]}>
+    <PermissionGuard required={[P.PR_CREATE, P.PR_READ, P.PR_APPROVE_FINANCE, P.PR_APPROVE_DIRECTOR]}>
       {children}
     </PermissionGuard>
   );

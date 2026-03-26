@@ -61,6 +61,7 @@ export default function ProfilePage() {
     } catch (err) {
       const fallback = setApiFieldErrors(pwForm.setError, err);
       if (fallback) toast.error(fallback);
+      throw err;
     }
   };
 
@@ -94,6 +95,7 @@ export default function ProfilePage() {
     } catch (err) {
       const fallback = setApiFieldErrors(pinForm.setError, err);
       if (fallback) toast.error(fallback);
+      throw err;
     }
   };
 

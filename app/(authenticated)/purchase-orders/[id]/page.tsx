@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -21,10 +21,10 @@ import { Permissions as P } from '@/lib/utils/permissions';
 import {
   useGetPOQuery,
   useSubmitPOMutation,
-  useApproveManagerPOMutation,
-  useRejectManagerPOMutation,
   useApproveFinancePOMutation,
   useRejectFinancePOMutation,
+  useApproveDirectorPOMutation,
+  useRejectDirectorPOMutation,
 } from '@/lib/features/procurement/poApi';
 import { formatDate, formatDateTime, formatMoney, formatWeight } from '@/lib/utils/formatters';
 import type { POLine, POAmendment } from '@/lib/api/types/procurement';
@@ -35,14 +35,14 @@ export default function PODetailPage() {
 
   const { data: po, isLoading, isError, error, refetch } = useGetPOQuery(id);
   const [submitPO] = useSubmitPOMutation();
-  const [approveManager] = useApproveManagerPOMutation();
-  const [rejectManager] = useRejectManagerPOMutation();
   const [approveFinance] = useApproveFinancePOMutation();
   const [rejectFinance] = useRejectFinancePOMutation();
+  const [approveDirector] = useApproveDirectorPOMutation();
+  const [rejectDirector] = useRejectDirectorPOMutation();
 
   const { canPerform: canSubmit } = useCanPerformAction(P.PO_CREATE, null, false);
-  const { canPerform: canManagerApprove } = useCanPerformAction(P.PO_APPROVE_MANAGER, po?.requestedBy);
   const { canPerform: canFinanceApprove } = useCanPerformAction(P.PO_APPROVE_FINANCE, po?.requestedBy);
+  const { canPerform: canDirectorApprove } = useCanPerformAction(P.PO_APPROVE_DIRECTOR, po?.requestedBy);
 
   const handleSubmit = useCallback(async () => {
     try {
@@ -51,24 +51,10 @@ export default function PODetailPage() {
     } catch { toast.error('Failed to submit PO'); }
   }, [submitPO, id]);
 
-  const handleManagerApprove = useCallback(async (notes?: string) => {
-    try {
-      await approveManager({ id, data: { notes } }).unwrap();
-      toast.success('PO approved by manager');
-    } catch { toast.error('Failed to approve PO'); }
-  }, [approveManager, id]);
-
-  const handleManagerReject = useCallback(async (reason: string) => {
-    try {
-      await rejectManager({ id, data: { rejectionReason: reason } }).unwrap();
-      toast.success('PO rejected by manager');
-    } catch { toast.error('Failed to reject PO'); }
-  }, [rejectManager, id]);
-
   const handleFinanceApprove = useCallback(async (notes?: string) => {
     try {
       await approveFinance({ id, data: { notes } }).unwrap();
-      toast.success('PO approved by finance — issued');
+      toast.success('PO approved by finance');
     } catch { toast.error('Failed to approve PO'); }
   }, [approveFinance, id]);
 
@@ -78,6 +64,20 @@ export default function PODetailPage() {
       toast.success('PO rejected by finance');
     } catch { toast.error('Failed to reject PO'); }
   }, [rejectFinance, id]);
+
+  const handleDirectorApprove = useCallback(async (notes?: string) => {
+    try {
+      await approveDirector({ id, data: { notes } }).unwrap();
+      toast.success('PO approved by director — issued');
+    } catch { toast.error('Failed to approve PO'); }
+  }, [approveDirector, id]);
+
+  const handleDirectorReject = useCallback(async (reason: string) => {
+    try {
+      await rejectDirector({ id, data: { rejectionReason: reason } }).unwrap();
+      toast.success('PO rejected by director');
+    } catch { toast.error('Failed to reject PO'); }
+  }, [rejectDirector, id]);
 
   if (isError) return <QueryErrorAlert error={error} />;
   if (isLoading || !po) return <DetailPageSkeleton descriptionRows={12} hasTable />;
@@ -109,19 +109,19 @@ export default function PODetailPage() {
     { label: 'Expected Delivery', value: formatDate(po.expectedDeliveryDate) },
     { label: 'Requested By', value: po.requestedByName },
     { label: 'Requested At', value: formatDateTime(po.requestedAt) },
-    ...(po.managerApprovedByName ? [
-      { label: 'Manager Approved By', value: po.managerApprovedByName },
-      { label: 'Manager Approved At', value: formatDateTime(po.managerApprovedAt) },
-    ] : []),
-    ...(po.managerRejectionReason ? [
-      { label: 'Manager Rejection', value: <span className="text-red-600">{po.managerRejectionReason}</span>, span: 2 },
-    ] : []),
     ...(po.financeApprovedByName ? [
       { label: 'Finance Approved By', value: po.financeApprovedByName },
       { label: 'Finance Approved At', value: formatDateTime(po.financeApprovedAt) },
     ] : []),
     ...(po.financeRejectionReason ? [
       { label: 'Finance Rejection', value: <span className="text-red-600">{po.financeRejectionReason}</span>, span: 2 },
+    ] : []),
+    ...(po.directorApprovedByName ? [
+      { label: 'Director Approved By', value: po.directorApprovedByName },
+      { label: 'Director Approved At', value: formatDateTime(po.directorApprovedAt) },
+    ] : []),
+    ...(po.directorRejectionReason ? [
+      { label: 'Director Rejection', value: <span className="text-red-600">{po.directorRejectionReason}</span>, span: 2 },
     ] : []),
     ...(po.issuedAt ? [{ label: 'Issued At', value: formatDateTime(po.issuedAt) }] : []),
     { label: 'Created', value: formatDateTime(po.createdAt) },
@@ -142,24 +142,29 @@ export default function PODetailPage() {
         <div className="flex flex-wrap items-center gap-2">
           <DownloadPdfButton onGenerate={() => generatePOPdf(po)} />
           {po.status === 'Draft' && canSubmit && (
-            <Button size="sm" onClick={handleSubmit}>
-              <Send className="h-4 w-4 mr-1" />Submit
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => router.push(`/purchase-orders/edit/${po.id}`)}>
+                <Pencil className="h-4 w-4 mr-1" />Edit
+              </Button>
+              <Button size="sm" onClick={handleSubmit}>
+                <Send className="h-4 w-4 mr-1" />Submit
+              </Button>
+            </>
           )}
-          {po.status === 'Submitted' && canManagerApprove && (
-            <ApprovalActions
-              onApprove={handleManagerApprove}
-              onReject={handleManagerReject}
-              approveLabel="Manager Approve"
-              rejectLabel="Manager Reject"
-            />
-          )}
-          {po.status === 'ManagerApproved' && canFinanceApprove && (
+          {po.status === 'Submitted' && canFinanceApprove && (
             <ApprovalActions
               onApprove={handleFinanceApprove}
               onReject={handleFinanceReject}
               approveLabel="Finance Approve"
               rejectLabel="Finance Reject"
+            />
+          )}
+          {po.status === 'FinanceApproved' && canDirectorApprove && (
+            <ApprovalActions
+              onApprove={handleDirectorApprove}
+              onReject={handleDirectorReject}
+              approveLabel="Director Approve & Issue"
+              rejectLabel="Director Reject"
             />
           )}
         </div>
@@ -180,10 +185,10 @@ export default function PODetailPage() {
         />
       </div>
 
-      {po.amendments.length > 0 && (
+      {po.amendments?.length > 0 && (
         <div className="rounded-[14px] border border-slate-200 bg-white p-6">
           <h3 className="text-sm font-semibold text-slate-700 mb-3">
-            Amendments ({po.amendments.length})
+            Amendments ({po.amendments?.length})
           </h3>
           <DataTable<POAmendment>
             columns={amendmentColumns}

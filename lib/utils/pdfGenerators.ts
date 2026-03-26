@@ -35,16 +35,16 @@ export function generatePOPdf(po: PO): void {
     { label: 'Expected Delivery', value: formatDate(po.expectedDeliveryDate) },
     { label: 'Requested By', value: po.requestedByName },
     { label: 'Requested At', value: formatDateTime(po.requestedAt) },
-    ...(po.managerApprovedByName
-      ? [
-          { label: 'Manager Approved By', value: po.managerApprovedByName },
-          { label: 'Manager Approved At', value: formatDateTime(po.managerApprovedAt) },
-        ]
-      : []),
     ...(po.financeApprovedByName
       ? [
           { label: 'Finance Approved By', value: po.financeApprovedByName },
           { label: 'Finance Approved At', value: formatDateTime(po.financeApprovedAt) },
+        ]
+      : []),
+    ...(po.directorApprovedByName
+      ? [
+          { label: 'Director Approved By', value: po.directorApprovedByName },
+          { label: 'Director Approved At', value: formatDateTime(po.directorApprovedAt) },
         ]
       : []),
     ...(po.issuedAt ? [{ label: 'Issued At', value: formatDateTime(po.issuedAt) }] : []),

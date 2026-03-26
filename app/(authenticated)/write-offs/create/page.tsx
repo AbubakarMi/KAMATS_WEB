@@ -73,6 +73,7 @@ export default function CreateWriteOffPage() {
     } catch (err) {
       const fallback = setApiFieldErrors(form.setError, err);
       if (fallback) toast.error(fallback);
+      throw err;
     }
   };
 

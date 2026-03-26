@@ -15,6 +15,20 @@ export const createPRSchema = z.object({
     .min(1, 'Delivery date is required'),
 });
 
+export const updatePRSchema = z.object({
+  quantityBags: z.coerce
+    .number()
+    .min(1, 'Quantity must be at least 1 bag')
+    .max(100000, 'Quantity must not exceed 100,000 bags'),
+  justification: z
+    .string()
+    .min(10, 'Justification must be at least 10 characters')
+    .max(2000, 'Justification must not exceed 2000 characters'),
+  requestedDeliveryDate: z
+    .string()
+    .min(1, 'Delivery date is required'),
+});
+
 const createPOLineSchema = z.object({
   productSpecification: z
     .string()
@@ -35,6 +49,15 @@ const createPOLineSchema = z.object({
 
 export const createPOSchema = z.object({
   prId: z.string().uuid('Select a purchase requisition'),
+  supplierId: z.string().uuid('Select a supplier'),
+  destinationStoreId: z.string().uuid('Select a destination store'),
+  expectedDeliveryDate: z.string().min(1, 'Delivery date is required'),
+  currency: z.string().default('NGN'),
+  notes: z.string().max(2000, 'Notes must not exceed 2000 characters').optional(),
+  lines: z.array(createPOLineSchema).min(1, 'At least one line item is required'),
+});
+
+export const updatePOSchema = z.object({
   supplierId: z.string().uuid('Select a supplier'),
   destinationStoreId: z.string().uuid('Select a destination store'),
   expectedDeliveryDate: z.string().min(1, 'Delivery date is required'),

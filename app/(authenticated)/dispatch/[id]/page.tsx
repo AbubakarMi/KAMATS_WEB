@@ -141,8 +141,9 @@ export default function DispatchDetailPage() {
       toast.success('Short shipment approved');
       setShortOpen(false);
       setShortReason('');
-    } catch {
+    } catch (err) {
       toast.error('Failed to approve short shipment');
+      throw err;
     }
   };
 

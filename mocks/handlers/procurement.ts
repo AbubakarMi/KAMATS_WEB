@@ -53,6 +53,17 @@ export const procurementHandlers = [
     return HttpResponse.json({ data: newPR, meta: { timestamp: new Date().toISOString(), request_id: 'mock' } }, { status: 201 });
   }),
 
+  // Update PR
+  http.put(`${API}/purchase-requisitions/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const pr = mockPRs.find((p) => p.id === params.id);
+    if (!pr) return HttpResponse.json({ status: 404, code: 'NOT_FOUND', message: 'PR not found', traceId: 'mock' }, { status: 404 });
+    return HttpResponse.json({
+      data: { ...pr, ...body },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
   // Submit PR
   http.patch(`${API}/purchase-requisitions/:id/submit`, ({ params }) => {
     return HttpResponse.json({
@@ -61,19 +72,36 @@ export const procurementHandlers = [
     });
   }),
 
-  // Approve PR
-  http.patch(`${API}/purchase-requisitions/:id/approve`, ({ params }) => {
+  // Finance approve PR
+  http.patch(`${API}/purchase-requisitions/:id/approve-finance`, ({ params }) => {
     return HttpResponse.json({
-      data: { id: params.id, status: 'Approved', approved_by: '11111111-1111-1111-1111-111111111111', approved_at: new Date().toISOString() },
+      data: { id: params.id, status: 'FinanceApproved', finance_approved_by: '33333333-3333-3333-3333-333333333333', finance_approved_at: new Date().toISOString() },
       meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
     });
   }),
 
-  // Reject PR
-  http.patch(`${API}/purchase-requisitions/:id/reject`, async ({ params, request }) => {
+  // Finance reject PR
+  http.patch(`${API}/purchase-requisitions/:id/reject-finance`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
-      data: { id: params.id, status: 'Rejected', rejection_reason: body.rejection_reason },
+      data: { id: params.id, status: 'FinanceRejected', finance_rejection_reason: body.rejection_reason },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
+  // Director approve PR
+  http.patch(`${API}/purchase-requisitions/:id/approve-director`, ({ params }) => {
+    return HttpResponse.json({
+      data: { id: params.id, status: 'Approved', director_approved_by: '11111111-1111-1111-1111-111111111111', director_approved_at: new Date().toISOString() },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
+  // Director reject PR
+  http.patch(`${API}/purchase-requisitions/:id/reject-director`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      data: { id: params.id, status: 'Rejected', director_rejection_reason: body.rejection_reason },
       meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
     });
   }),
@@ -124,6 +152,17 @@ export const procurementHandlers = [
     return HttpResponse.json({ data: newPO, meta: { timestamp: new Date().toISOString(), request_id: 'mock' } }, { status: 201 });
   }),
 
+  // Update PO
+  http.put(`${API}/purchase-orders/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const po = mockPOs.find((p) => p.id === params.id);
+    if (!po) return HttpResponse.json({ status: 404, code: 'NOT_FOUND', message: 'PO not found', traceId: 'mock' }, { status: 404 });
+    return HttpResponse.json({
+      data: { ...po, ...body },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
   // Submit PO
   http.patch(`${API}/purchase-orders/:id/submit`, ({ params }) => {
     return HttpResponse.json({
@@ -132,27 +171,10 @@ export const procurementHandlers = [
     });
   }),
 
-  // Manager approve PO
-  http.patch(`${API}/purchase-orders/:id/approve-manager`, ({ params }) => {
-    return HttpResponse.json({
-      data: { id: params.id, status: 'ManagerApproved', manager_approved_by: '11111111-1111-1111-1111-111111111111', manager_approved_at: new Date().toISOString() },
-      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
-    });
-  }),
-
-  // Manager reject PO
-  http.patch(`${API}/purchase-orders/:id/reject-manager`, async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json({
-      data: { id: params.id, status: 'ManagerRejected', manager_rejection_reason: body.rejection_reason },
-      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
-    });
-  }),
-
   // Finance approve PO
   http.patch(`${API}/purchase-orders/:id/approve-finance`, ({ params }) => {
     return HttpResponse.json({
-      data: { id: params.id, status: 'Issued', finance_approved_by: '11111111-1111-1111-1111-111111111111', finance_approved_at: new Date().toISOString(), issued_at: new Date().toISOString() },
+      data: { id: params.id, status: 'FinanceApproved', finance_approved_by: '33333333-3333-3333-3333-333333333333', finance_approved_at: new Date().toISOString() },
       meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
     });
   }),
@@ -166,27 +188,44 @@ export const procurementHandlers = [
     });
   }),
 
+  // Director approve PO (issues)
+  http.patch(`${API}/purchase-orders/:id/approve-director`, ({ params }) => {
+    return HttpResponse.json({
+      data: { id: params.id, status: 'Issued', director_approved_by: '11111111-1111-1111-1111-111111111111', director_approved_at: new Date().toISOString(), issued_at: new Date().toISOString() },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
+  // Director reject PO
+  http.patch(`${API}/purchase-orders/:id/reject-director`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      data: { id: params.id, status: 'DirectorRejected', director_rejection_reason: body.rejection_reason },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
   // Create amendment
   http.post(`${API}/purchase-orders/:id/amendments`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
-      data: { id: crypto.randomUUID(), po_id: params.id, amendment_version: 1, ...body, status: 'PendingManagerApproval', requested_at: new Date().toISOString() },
+      data: { id: crypto.randomUUID(), po_id: params.id, amendment_version: 1, ...body, status: 'PendingFinanceApproval', requested_at: new Date().toISOString() },
       meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
     }, { status: 201 });
-  }),
-
-  // Approve amendment (manager)
-  http.patch(`${API}/purchase-orders/:id/amendments/:aId/approve-manager`, ({ params }) => {
-    return HttpResponse.json({
-      data: { id: params.aId, status: 'PendingFinanceApproval', manager_approved_at: new Date().toISOString() },
-      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
-    });
   }),
 
   // Approve amendment (finance)
   http.patch(`${API}/purchase-orders/:id/amendments/:aId/approve-finance`, ({ params }) => {
     return HttpResponse.json({
-      data: { id: params.aId, status: 'Applied', finance_approved_at: new Date().toISOString() },
+      data: { id: params.aId, status: 'PendingDirectorApproval', finance_approved_at: new Date().toISOString() },
+      meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
+    });
+  }),
+
+  // Approve amendment (director)
+  http.patch(`${API}/purchase-orders/:id/amendments/:aId/approve-director`, ({ params }) => {
+    return HttpResponse.json({
+      data: { id: params.aId, status: 'Applied', director_approved_at: new Date().toISOString() },
       meta: { timestamp: new Date().toISOString(), request_id: 'mock' },
     });
   }),

@@ -14,6 +14,8 @@ export const supplierStatusColors: ColorMap = {
 export const prStatusColors: ColorMap = {
   Draft: 'default',
   Submitted: 'blue',
+  FinanceApproved: 'cyan',
+  FinanceRejected: 'red',
   Approved: 'green',
   Rejected: 'red',
   ConvertedToPO: 'purple',
@@ -23,14 +25,14 @@ export const prStatusColors: ColorMap = {
 export const poStatusColors: ColorMap = {
   Draft: 'default',
   Submitted: 'blue',
-  ManagerApproved: 'cyan',
+  FinanceApproved: 'cyan',
   Issued: 'green',
   AwaitingDelivery: 'geekblue',
   PartiallyReceived: 'orange',
   FullyReceived: 'green',
   Closed: 'default',
-  ManagerRejected: 'red',
   FinanceRejected: 'red',
+  DirectorRejected: 'red',
   AmendmentPending: 'orange',
   Cancelled: 'default',
 };

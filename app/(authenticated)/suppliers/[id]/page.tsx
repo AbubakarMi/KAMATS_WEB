@@ -117,7 +117,7 @@ export default function SupplierDetailPage() {
       await reactivateSupplier({ id }).unwrap();
       toast.success('Supplier reactivated');
       setReactivateOpen(false);
-    } catch { toast.error('Failed to reactivate supplier'); }
+    } catch (err) { toast.error('Failed to reactivate supplier'); throw err; }
   }, [reactivateSupplier, id]);
 
   if (isError) return <QueryErrorAlert error={error} />;

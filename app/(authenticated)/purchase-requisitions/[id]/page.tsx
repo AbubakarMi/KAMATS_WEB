@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Send, ArrowLeftRight } from 'lucide-react';
+import { ArrowLeft, Send, ArrowLeftRight, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,10 @@ import { Permissions as P } from '@/lib/utils/permissions';
 import {
   useGetPRQuery,
   useSubmitPRMutation,
-  useApprovePRMutation,
-  useRejectPRMutation,
+  useApproveFinancePRMutation,
+  useRejectFinancePRMutation,
+  useApproveDirectorPRMutation,
+  useRejectDirectorPRMutation,
 } from '@/lib/features/procurement/prApi';
 import { formatDate, formatDateTime, formatWeight, formatNumber } from '@/lib/utils/formatters';
 
@@ -28,11 +30,14 @@ export default function PRDetailPage() {
 
   const { data: pr, isLoading, isError, error, refetch } = useGetPRQuery(id);
   const [submitPR] = useSubmitPRMutation();
-  const [approvePR] = useApprovePRMutation();
-  const [rejectPR] = useRejectPRMutation();
+  const [approveFinancePR] = useApproveFinancePRMutation();
+  const [rejectFinancePR] = useRejectFinancePRMutation();
+  const [approveDirectorPR] = useApproveDirectorPRMutation();
+  const [rejectDirectorPR] = useRejectDirectorPRMutation();
 
   const { canPerform: canSubmit } = useCanPerformAction(P.PR_CREATE, null, false);
-  const { canPerform: canApprove } = useCanPerformAction(P.PR_APPROVE, pr?.raisedBy);
+  const { canPerform: canFinanceApprove } = useCanPerformAction(P.PR_APPROVE_FINANCE, pr?.raisedBy);
+  const { canPerform: canDirectorApprove } = useCanPerformAction(P.PR_APPROVE_DIRECTOR, pr?.raisedBy);
   const { canPerform: canConvertToPO } = useCanPerformAction(P.PO_CREATE, null, false);
 
   const handleSubmit = useCallback(async () => {
@@ -42,19 +47,33 @@ export default function PRDetailPage() {
     } catch { toast.error('Failed to submit PR'); }
   }, [submitPR, id]);
 
-  const handleApprove = useCallback(async (notes?: string) => {
+  const handleFinanceApprove = useCallback(async (notes?: string) => {
     try {
-      await approvePR({ id, data: { notes } }).unwrap();
-      toast.success('PR approved');
+      await approveFinancePR({ id, data: { notes } }).unwrap();
+      toast.success('PR approved by finance');
     } catch { toast.error('Failed to approve PR'); }
-  }, [approvePR, id]);
+  }, [approveFinancePR, id]);
 
-  const handleReject = useCallback(async (reason: string) => {
+  const handleFinanceReject = useCallback(async (reason: string) => {
     try {
-      await rejectPR({ id, data: { rejectionReason: reason } }).unwrap();
-      toast.success('PR rejected');
+      await rejectFinancePR({ id, data: { rejectionReason: reason } }).unwrap();
+      toast.success('PR rejected by finance');
     } catch { toast.error('Failed to reject PR'); }
-  }, [rejectPR, id]);
+  }, [rejectFinancePR, id]);
+
+  const handleDirectorApprove = useCallback(async (notes?: string) => {
+    try {
+      await approveDirectorPR({ id, data: { notes } }).unwrap();
+      toast.success('PR approved by director');
+    } catch { toast.error('Failed to approve PR'); }
+  }, [approveDirectorPR, id]);
+
+  const handleDirectorReject = useCallback(async (reason: string) => {
+    try {
+      await rejectDirectorPR({ id, data: { rejectionReason: reason } }).unwrap();
+      toast.success('PR rejected by director');
+    } catch { toast.error('Failed to reject PR'); }
+  }, [rejectDirectorPR, id]);
 
   if (isError) return <QueryErrorAlert error={error} />;
   if (isLoading || !pr) return <DetailPageSkeleton descriptionRows={10} />;
@@ -71,12 +90,19 @@ export default function PRDetailPage() {
     { label: 'Justification', value: pr.justification, span: 2 },
     { label: 'Raised By', value: pr.raisedByName },
     { label: 'Raised At', value: formatDateTime(pr.raisedAt) },
-    ...(pr.approvedByName ? [
-      { label: 'Approved By', value: pr.approvedByName },
-      { label: 'Approved At', value: formatDateTime(pr.approvedAt) },
+    ...(pr.financeApprovedByName ? [
+      { label: 'Finance Approved By', value: pr.financeApprovedByName },
+      { label: 'Finance Approved At', value: formatDateTime(pr.financeApprovedAt) },
     ] : []),
-    ...(pr.rejectionReason ? [
-      { label: 'Rejection Reason', value: <span className="text-red-600">{pr.rejectionReason}</span>, span: 2 },
+    ...(pr.financeRejectionReason ? [
+      { label: 'Finance Rejection', value: <span className="text-red-600">{pr.financeRejectionReason}</span>, span: 2 },
+    ] : []),
+    ...(pr.directorApprovedByName ? [
+      { label: 'Director Approved By', value: pr.directorApprovedByName },
+      { label: 'Director Approved At', value: formatDateTime(pr.directorApprovedAt) },
+    ] : []),
+    ...(pr.directorRejectionReason ? [
+      { label: 'Director Rejection', value: <span className="text-red-600">{pr.directorRejectionReason}</span>, span: 2 },
     ] : []),
     ...(pr.expiresAt ? [{ label: 'Expires At', value: formatDateTime(pr.expiresAt) }] : []),
     ...(pr.linkedPoId ? [
@@ -99,12 +125,30 @@ export default function PRDetailPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {pr.status === 'Draft' && canSubmit && (
-            <Button size="sm" onClick={handleSubmit}>
-              <Send className="h-4 w-4 mr-1" />Submit
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => router.push(`/purchase-requisitions/edit/${pr.id}`)}>
+                <Pencil className="h-4 w-4 mr-1" />Edit
+              </Button>
+              <Button size="sm" onClick={handleSubmit}>
+                <Send className="h-4 w-4 mr-1" />Submit
+              </Button>
+            </>
           )}
-          {pr.status === 'Submitted' && canApprove && (
-            <ApprovalActions onApprove={handleApprove} onReject={handleReject} />
+          {pr.status === 'Submitted' && canFinanceApprove && (
+            <ApprovalActions
+              onApprove={handleFinanceApprove}
+              onReject={handleFinanceReject}
+              approveLabel="Finance Approve"
+              rejectLabel="Finance Reject"
+            />
+          )}
+          {pr.status === 'FinanceApproved' && canDirectorApprove && (
+            <ApprovalActions
+              onApprove={handleDirectorApprove}
+              onReject={handleDirectorReject}
+              approveLabel="Director Approve"
+              rejectLabel="Director Reject"
+            />
           )}
           {pr.status === 'Approved' && !pr.linkedPoId && canConvertToPO && (
             <Button size="sm" onClick={() => router.push(`/purchase-orders/create?prId=${pr.id}`)}>
