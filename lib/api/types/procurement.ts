@@ -17,18 +17,24 @@ export interface PR {
   stockBalanceAtPr: number;
   justification: string;
   requestedDeliveryDate: string;
-  raisedBy: UUID;
-  raisedByName: string;
-  raisedAt: Timestamp;
-  financeApprovedBy: UUID | null;
-  financeApprovedByName: string | null;
-  financeApprovedAt: Timestamp | null;
-  financeRejectionReason: string | null;
-  directorApprovedBy: UUID | null;
-  directorApprovedByName: string | null;
-  directorApprovedAt: Timestamp | null;
-  directorRejectionReason: string | null;
   expiresAt: Timestamp | null;
+  // Creator (StoreKeeper)
+  raisedBy: UUID;
+  raisedByName: string | null;
+  raisedAt: Timestamp;
+  // Reviewer (Finance Officer)
+  reviewedBy: UUID | null;
+  reviewedByName: string | null;
+  reviewedAt: Timestamp | null;
+  reviewNotes: string | null;
+  changeRequestReason: string | null;
+  rejectionReason: string | null;
+  // Approver (Admin)
+  approvedBy: UUID | null;
+  approvedByName: string | null;
+  approvedAt: Timestamp | null;
+  approvalNotes: string | null;
+  // Linked PO
   linkedPoId: UUID | null;
   linkedPoNumber: string | null;
   createdAt: Timestamp;

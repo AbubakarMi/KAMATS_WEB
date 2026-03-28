@@ -47,11 +47,14 @@ export const endpoints = {
     list: '/purchase-requisitions',
     detail: (id: string) => `/purchase-requisitions/${id}`,
     update: (id: string) => `/purchase-requisitions/${id}`,
+    delete: (id: string) => `/purchase-requisitions/${id}`,
     submit: (id: string) => `/purchase-requisitions/${id}/submit`,
-    approveFinance: (id: string) => `/purchase-requisitions/${id}/approve-finance`,
-    rejectFinance: (id: string) => `/purchase-requisitions/${id}/reject-finance`,
-    approveDirector: (id: string) => `/purchase-requisitions/${id}/approve-director`,
-    rejectDirector: (id: string) => `/purchase-requisitions/${id}/reject-director`,
+    reviewAccept: (id: string) => `/purchase-requisitions/${id}/review-accept`,
+    reviewRequestChange: (id: string) => `/purchase-requisitions/${id}/review-request-change`,
+    reviewReject: (id: string) => `/purchase-requisitions/${id}/review-reject`,
+    resubmit: (id: string) => `/purchase-requisitions/${id}/resubmit`,
+    approve: (id: string) => `/purchase-requisitions/${id}/approve`,
+    reject: (id: string) => `/purchase-requisitions/${id}/reject`,
   },
 
   // === M3 Purchase Orders (11) ===

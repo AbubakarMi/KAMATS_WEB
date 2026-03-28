@@ -24,24 +24,40 @@ export const prApi = baseApi.injectEndpoints({
       query: ({ id, data }) => ({ url: endpoints.pr.update(id), method: 'PUT', data }),
       invalidatesTags: ['PR'],
     }),
-    submitPR: builder.mutation<void, string>({
+    deletePR: builder.mutation<void, string>({
+      query: (id) => ({ url: endpoints.pr.delete(id), method: 'DELETE' }),
+      invalidatesTags: ['PR'],
+    }),
+    // StoreKeeper submits
+    submitPR: builder.mutation<PR, string>({
       query: (id) => ({ url: endpoints.pr.submit(id), method: 'PATCH' }),
       invalidatesTags: ['PR'],
     }),
-    approveFinancePR: builder.mutation<void, { id: string; data?: ApprovePRRequest }>({
-      query: ({ id, data }) => ({ url: endpoints.pr.approveFinance(id), method: 'PATCH', data }),
+    // Finance Officer reviews
+    reviewAcceptPR: builder.mutation<PR, { id: string; data?: ApprovePRRequest }>({
+      query: ({ id, data }) => ({ url: endpoints.pr.reviewAccept(id), method: 'POST', data }),
       invalidatesTags: ['PR'],
     }),
-    rejectFinancePR: builder.mutation<void, { id: string; data: RejectPRRequest }>({
-      query: ({ id, data }) => ({ url: endpoints.pr.rejectFinance(id), method: 'PATCH', data }),
+    reviewRequestChangePR: builder.mutation<PR, { id: string; data: RejectPRRequest }>({
+      query: ({ id, data }) => ({ url: endpoints.pr.reviewRequestChange(id), method: 'POST', data }),
       invalidatesTags: ['PR'],
     }),
-    approveDirectorPR: builder.mutation<void, { id: string; data?: ApprovePRRequest }>({
-      query: ({ id, data }) => ({ url: endpoints.pr.approveDirector(id), method: 'PATCH', data }),
+    reviewRejectPR: builder.mutation<PR, { id: string; data: RejectPRRequest }>({
+      query: ({ id, data }) => ({ url: endpoints.pr.reviewReject(id), method: 'POST', data }),
       invalidatesTags: ['PR'],
     }),
-    rejectDirectorPR: builder.mutation<void, { id: string; data: RejectPRRequest }>({
-      query: ({ id, data }) => ({ url: endpoints.pr.rejectDirector(id), method: 'PATCH', data }),
+    // StoreKeeper resubmits after change request
+    resubmitPR: builder.mutation<PR, string>({
+      query: (id) => ({ url: endpoints.pr.resubmit(id), method: 'POST' }),
+      invalidatesTags: ['PR'],
+    }),
+    // Admin final approval
+    approvePR: builder.mutation<PR, { id: string; data?: ApprovePRRequest }>({
+      query: ({ id, data }) => ({ url: endpoints.pr.approve(id), method: 'POST', data }),
+      invalidatesTags: ['PR'],
+    }),
+    rejectPR: builder.mutation<PR, { id: string; data: RejectPRRequest }>({
+      query: ({ id, data }) => ({ url: endpoints.pr.reject(id), method: 'POST', data }),
       invalidatesTags: ['PR'],
     }),
   }),
@@ -52,9 +68,12 @@ export const {
   useGetPRQuery,
   useCreatePRMutation,
   useUpdatePRMutation,
+  useDeletePRMutation,
   useSubmitPRMutation,
-  useApproveFinancePRMutation,
-  useRejectFinancePRMutation,
-  useApproveDirectorPRMutation,
-  useRejectDirectorPRMutation,
+  useReviewAcceptPRMutation,
+  useReviewRequestChangePRMutation,
+  useReviewRejectPRMutation,
+  useResubmitPRMutation,
+  useApprovePRMutation,
+  useRejectPRMutation,
 } = prApi;

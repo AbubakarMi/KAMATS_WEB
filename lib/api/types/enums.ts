@@ -20,8 +20,9 @@ export type SupplierStatus = (typeof SupplierStatus)[keyof typeof SupplierStatus
 export const PRStatus = {
   Draft: 'Draft',
   Submitted: 'Submitted',
-  FinanceApproved: 'FinanceApproved',
-  FinanceRejected: 'FinanceRejected',
+  Reviewed: 'Reviewed',
+  ChangeRequested: 'ChangeRequested',
+  Updated: 'Updated',
   Approved: 'Approved',
   Rejected: 'Rejected',
   ConvertedToPO: 'ConvertedToPO',

@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   async rewrites() {
     return [
-      { source: '/api/:path*', destination: 'https://localhost:9409/api/:path*' },
-      { source: '/hubs/:path*', destination: 'https://localhost:9409/hubs/:path*' },
+      { source: '/api/:path*', destination: 'http://localhost:9410/api/:path*' },
+      { source: '/hubs/:path*', destination: 'http://localhost:9410/hubs/:path*' },
     ];
   },
 };
