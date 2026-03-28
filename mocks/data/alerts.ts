@@ -23,7 +23,7 @@ export const mockAlerts: Alert[] = [
     alertType: 'ConsumptionAnomaly',
     severity: 'Significant',
     title: 'High Anomaly Consumption',
-    message: 'Consumption entry CON-2026-0002 at Challawa Treatment Plant shows 56% deviation from expected dosage.',
+    message: 'Consumption entry CON-2026-0002 at Challawa Treatment Plant shows 56% deviation from expected dosage',
     entityType: 'ConsumptionEntry',
     entityId: 'con-002',
     storeId: 's4',
